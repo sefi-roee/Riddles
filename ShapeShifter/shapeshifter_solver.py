@@ -65,7 +65,11 @@ class ShapeShifter:
 
         return s
 
-    def solve(self):
+    def solve(self, alg):
+        if alg == 'bf':
+        	return solve_bf()
+
+    def solve_bf(self):
         pieces = [(len(p) * len(p[0]), i, p) for i,p in enumerate(self.pieces)]
         pieces = list(sorted(pieces))
 
@@ -75,11 +79,11 @@ class ShapeShifter:
 
         #print tot
         print pieces
-        sol = self.solve_helper(pieces, len(pieces) - 1, [])
+        sol = self.solve_bf_helper(pieces, len(pieces) - 1, [])
 
         return sol
 
-    def solve_helper(self, pieces, l, pos):
+    def solve_bf_helper(self, pieces, l, pos):
         if l == -1:
             #if all([self.board[i][j]==0 for i in range(self.board_size[0]) for j in range(self.board_size[1])]):
             if self.non_zero == 0:
@@ -109,7 +113,7 @@ class ShapeShifter:
 	                        	delta_non_zero += 1
 
                 self.non_zero += delta_non_zero
-                sol = self.solve_helper(pieces, l - 1, pos + [(p_i, (i, j))])
+                sol = self.solve_bf_helper(pieces, l - 1, pos + [(p_i, (i, j))])
                 if sol:
                     return sol
                 self.non_zero -= delta_non_zero

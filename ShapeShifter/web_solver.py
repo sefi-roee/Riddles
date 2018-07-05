@@ -4,9 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 import re, time, sys
-from shapeshifter_solver_bf import ShapeShifter
-#from shapeshifter_solver_bf_shuffle import ShapeShifter
-#from shapeshifter_solver_numpy_bf import ShapeShifter
+from shapeshifter_solver import ShapeShifter
 
 
 def print_elem(b, delim = '', tabs = 0):
@@ -134,7 +132,7 @@ with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 startTime = time.clock()
 solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])))
 print (solver)
-sol = solver.solve()
+sol = solver.solve('bf')
 sol = sorted(sol, key=lambda x: x[0])
 print sol
 

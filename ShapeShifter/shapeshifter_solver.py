@@ -85,7 +85,6 @@ class ShapeShifter:
 
     def solve_bf_helper(self, pieces, l, pos):
         if l == -1:
-            #if all([self.board[i][j]==0 for i in range(self.board_size[0]) for j in range(self.board_size[1])]):
             if self.non_zero == 0:
                 print ('Solution:')
                 for p in sorted(pos):
@@ -122,16 +121,17 @@ class ShapeShifter:
                     for b in range(len(p[0])):
                         self.board[i + a][j + b] = (self.board[i + a][j + b] - p[a][b]) % self.X
             
-if __name__ == "__main__":
+if __name__ == "__main__":parser.add_argument('file_name', help='grid file name')
     parser = argparse.ArgumentParser(description='Automatic solver for shapeshifter game.')
     parser.add_argument('file_name', help='grid file name')
+    parser.add_argument('alg', help='algorithm (bf) [default is: bf]', default='bf')
 
     args = parser.parse_args()
 
     startTime = time.clock()
     game = ShapeShifter(args.file_name)
     print (game)
-    game.solve()
+    game.solve(args.alg)
     elapsedTime = time.clock() - startTime
     print ("Time spent in (", __name__, ") is: ", elapsedTime, " sec")
 

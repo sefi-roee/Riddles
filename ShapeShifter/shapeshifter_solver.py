@@ -67,7 +67,7 @@ class ShapeShifter:
 
     def solve(self, alg):
         if alg == 'bf':
-        	return solve_bf()
+        	return self.solve_bf()
 
     def solve_bf(self):
         pieces = [(len(p) * len(p[0]), i, p) for i,p in enumerate(self.pieces)]

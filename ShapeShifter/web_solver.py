@@ -131,7 +131,7 @@ with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 startTime = time.clock()
 solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])), True)
 print (solver)
-sol = solver.solve('bf_prune')
+sol = solver.solve('bi')
 sol = sorted(sol, key=lambda x: x[0])
 print sol
 

@@ -1,6 +1,7 @@
 import time
 import sys
 import argparse
+from copy import deepcopy
 
 
 class ShapeShifter:
@@ -69,6 +70,8 @@ class ShapeShifter:
         	return self.solve_bf()
         elif alg == "bf_prune":
             return self.solve_bf_prune()
+        elif alg == "bi":
+            return self.solve_bi_directional()
 
     def solve_bf(self):
         sol = self.solve_bf_helper(0, [])
@@ -78,9 +81,9 @@ class ShapeShifter:
     def solve_bf_helper(self, l, pos):
         if l == self.num_of_pieces:
             if self.weight == 0:
-                print ('Solution:')
+                print 'Solution:'
                 for p in pos:
-                    print ('Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1]))
+                    print 'Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1])
                 return pos
 
             return False
@@ -141,9 +144,9 @@ class ShapeShifter:
     def solve_bf_prune_helper(self, l, pos):
         if l == self.num_of_pieces:
             if self.weight == 0:
-                print ('Solution:')
+                print 'Solution:'
                 for p in sorted(pos):
-                    print ('Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1]))
+                    print 'Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1])
                 return pos
 
             return False
@@ -152,7 +155,7 @@ class ShapeShifter:
         if self.partial_cover[l] < self.weight:
             return False
 
-        p_i, p, cover = self.augmented_pieces[l]
+        p_i, p, p_cover = self.augmented_pieces[l]
         
         if self.verbose:
             position_tot = (self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1)
@@ -190,10 +193,136 @@ class ShapeShifter:
         if self.verbose:
             sys.stdout.write('\033[F') # Move cursor up on line
 
+    def solve_bi_directional(self):
+        self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
+        self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0]))) # Sorting in order to prune as early as possible
+
+        '''begin = 0
+        end = self.num_of_pieces - 1
+        begin_size = 1
+        end_size = 1
+
+        while begin < end:
+            if begin_size > end_size:
+                end_size *= (self.board_size[0] - len(self.augmented_pieces[end][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[end][1][0]) + 1)
+                end -= 1
+            else:
+                begin_size *= (self.board_size[0] - len(self.augmented_pieces[begin][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[begin][1][0]) + 1)
+                begin += 1'''
+
+        tmp = 1
+        self.half = self.num_of_pieces - 1
+        while tmp < 10000:
+            tmp *= (self.board_size[0] - len(self.augmented_pieces[self.half][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[self.half][1][0]) + 1)
+            self.half -= 1
+
+        self.middle_board = [[0 for _ in range(self.board_size[1])] for _ in range(self.board_size[0])]
+        self.middle_boards = {}
+
+        print 'Calculating backward...'
+        self.solve_bi_directional_backward_helper(self.half, [])
+        print 'Calculating backward... Done'
+
+        print 'Calculating forward...'
+        sol = self.solve_bi_directional_forward_helper(0, [])
+        print 'Calculating forward... Done'
+
+        return sol
+
+    def solve_bi_directional_backward_helper(self, l, pos):
+        if l == self.num_of_pieces:
+            self.middle_boards[hash(str(self.middle_board))] = pos
+
+            return
+
+        p_i, p, p_cover = self.augmented_pieces[l]
+        
+        if self.verbose:
+            position_tot = (self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1)
+            position_cur = 0
+            print ''
+
+        for i in range(self.board_size[0] - len(p) + 1):
+            for j in range(self.board_size[1] - len(p[0]) + 1):
+                if self.verbose:
+                    position_cur += 1
+                    print '\r{}/{}...'.format(position_cur, position_tot),
+                    sys.stdout.flush()
+
+                delta_weight = 0
+
+                for a in range(len(p)):
+                    for b in range(len(p[0])):
+                        self.middle_board[i + a][j + b] = (self.middle_board[i + a][j + b] - p[a][b]) % self.X
+                        if p[a][b] != 0:
+                            if self.board[i + a][j + b] == 0:
+                                delta_weight -= (self.X - 1)
+                            else:
+                                delta_weight += 1
+
+                self.weight -= delta_weight
+                self.solve_bi_directional_backward_helper(l + 1, pos + [(p_i, (i, j))])
+                self.weight += delta_weight
+
+                for a in range(len(p)):
+                    for b in range(len(p[0])):
+                        self.middle_board[i + a][j + b] = (self.middle_board[i + a][j + b] + p[a][b]) % self.X
+
+        if self.verbose:
+            sys.stdout.write('\033[F') # Move cursor up on line
+
+    def solve_bi_directional_forward_helper(self, l, pos):
+        if l == self.half:
+            if hash(str(self.board)) in self.middle_boards:
+                print 'Solution:'
+                for p in pos + self.middle_boards[hash(str(self.board))]:
+                    print 'Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1])
+                return pos + self.middle_boards[hash(str(self.board))]
+
+            return False
+
+        p_i, p, p_cover = self.augmented_pieces[l]
+        
+        if self.verbose:
+            position_tot = (self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1)
+            position_cur = 0
+            print ''
+
+        for i in range(self.board_size[0] - len(p) + 1):
+            for j in range(self.board_size[1] - len(p[0]) + 1):
+                if self.verbose:
+                    position_cur += 1
+                    print '\r{}/{}...'.format(position_cur, position_tot),
+                    sys.stdout.flush()
+
+                delta_weight = 0
+
+                for a in range(len(p)):
+                    for b in range(len(p[0])):
+                        self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
+                        if p[a][b] != 0:
+                            if self.board[i + a][j + b] == 0:
+                                delta_weight -= (self.X - 1)
+                            else:
+                                delta_weight += 1
+
+                self.weight += delta_weight
+                sol = self.solve_bi_directional_forward_helper(l + 1, pos + [(p_i, (i, j))])
+                if sol:
+                    return sol
+                self.weight -= delta_weight
+
+                for a in range(len(p)):
+                    for b in range(len(p[0])):
+                        self.board[i + a][j + b] = (self.board[i + a][j + b] - p[a][b]) % self.X
+
+        if self.verbose:
+            sys.stdout.write('\033[F') # Move cursor up on line
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Automatic solver for shapeshifter game.')
     parser.add_argument('file_name', help='grid file name')
-    parser.add_argument('alg', help='algorithm (bf)')
+    parser.add_argument('alg', help='algorithm (bf/bf_prune/bi)')
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
     args = parser.parse_args()

@@ -3,8 +3,10 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
-import re, time
+import re, time, sys
 from shapeshifter_solver_bf import ShapeShifter
+#from shapeshifter_solver_bf_shuffle import ShapeShifter
+#from shapeshifter_solver_numpy_bf import ShapeShifter
 
 
 def print_elem(b, delim = '', tabs = 0):
@@ -74,13 +76,15 @@ except:
 	
 level = driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[1]/b/big').text
 
-# Get goal mapping
-goal_e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[2]/table/tbody/tr/td/table/tbody/tr/td[*]/img')
-goal = {}
-goal[goal_e[0].get_attribute('src')] = 0
+# Get group mapping
+group_e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[2]/table/tbody/tr/td/table/tbody/tr/td[*]/img')
+group = {}
+group[group_e[0].get_attribute('src')] = 1
 
-for i in range(2, len(goal_e) - 1, 2):
-	goal[goal_e[i].get_attribute('src')] = i // 2
+print len(group_e)
+for i in range(2, len(group_e) - 3, 2):
+	group[group_e[i].get_attribute('src')] = i // 2 + 1
+group[group_e[-3].get_attribute('src')] = 0
 
 # Get level board
 board_e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[*]/td[*]')
@@ -90,7 +94,7 @@ board = [[0 for _ in range(size[0])] for _ in range(size[1])]
 
 for e in board_e:
 	ind = map(int, re.findall(r'\d+', e.find_element_by_xpath('a').get_attribute('onmouseover')))
-	board[ind[1]][ind[0]] = goal[e.find_element_by_xpath('a/img').get_attribute('src')]
+	board[ind[1]][ind[0]] = group[e.find_element_by_xpath('a/img').get_attribute('src')]
 
 
 active_shape_e = driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[3]/table/tbody/tr/td/table')
@@ -116,8 +120,8 @@ for next_shape in next_shapes:
 	print ''
 
 with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
-	print >>out_file, len(goal)
-	print >>out_file, '{}x{}'.format(size[0], size[1])
+	print >>out_file, len(group)
+	print >>out_file, '{}x{}'.format(size[1], size[0])
 	print >>out_file, print_elem(board),
 	print >>out_file, 1 + len(next_shapes)
 	print >>out_file, '{}x{}'.format(len(active_shape), len(active_shape[0]))
@@ -134,8 +138,14 @@ sol = solver.solve()
 sol = sorted(sol, key=lambda x: x[0])
 print sol
 
-for s in sol:
+print 'Solution found'
+for i, s in enumerate(sol):
+	print '\r',
+	print '\tPlacing piece {}/{}...'.format(i+1, len(sol)),
+	sys.stdout.flush()
 	driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(s[1][0] + 1, s[1][1] + 1)).click()
+
+print ' Done!'
 
 elapsedTime = time.clock() - startTime
 print ("Board solved in (", __name__, ") is: ", elapsedTime, " sec")

@@ -79,7 +79,6 @@ group_e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]
 group = {}
 group[group_e[0].get_attribute('src')] = 1
 
-print len(group_e)
 for i in range(2, len(group_e) - 3, 2):
 	group[group_e[i].get_attribute('src')] = i // 2 + 1
 group[group_e[-3].get_attribute('src')] = 0
@@ -130,9 +129,9 @@ with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 		print >>out_file, print_elem(next_shape),
 
 startTime = time.clock()
-solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])))
+solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])), True)
 print (solver)
-sol = solver.solve('bf')
+sol = solver.solve('bf_prune')
 sol = sorted(sol, key=lambda x: x[0])
 print sol
 

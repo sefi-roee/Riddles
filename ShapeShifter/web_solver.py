@@ -131,9 +131,14 @@ with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 startTime = time.clock()
 solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])), True)
 print (solver)
+#sol = solver.solve('bf_prune')
 sol = solver.solve('bi')
-sol = sorted(sol, key=lambda x: x[0])
+#sol = sorted(sol, key=lambda x: x[0])
 print sol
+
+if sol == None:
+	print 'No solution found'
+	sys.exit(1)
 
 print 'Solution found'
 for i, s in enumerate(sol):

@@ -40,6 +40,7 @@ class ShapeShifter:
 					piece = [list(map(int, line)) for line in piece]
 					# Need to validate piece
 					self.pieces.append(piece)
+				self.pos = [0 for i in range(self.num_of_pieces)]
 		except IOError:
 			print ('unable to parse file {}'.format(fn))
 			sys.exit()
@@ -74,17 +75,17 @@ class ShapeShifter:
 			return self.solve_bi_directional()
 
 	def solve_bf(self):
-		sol = self.solve_bf_helper(0, [])
+		sol = self.solve_bf_helper(0)
 
 		return sol
 
-	def solve_bf_helper(self, l, pos):
+	def solve_bf_helper(self, l):
 		if l == self.num_of_pieces:
 			if self.weight == 0:
 				print 'Solution:'
-				for p in pos:
-					print 'Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1])
-				return pos
+				for i, p in enumerate(self.pos):
+					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+				return self.pos
 
 			return False
 
@@ -113,8 +114,9 @@ class ShapeShifter:
 							else:
 								delta_weight += 1
 
+				self.pos[l] = (i, j)
 				self.weight += delta_weight
-				sol = self.solve_bf_helper(l + 1, pos + [(l, (i, j))])
+				sol = self.solve_bf_helper(l + 1)
 				if sol:
 					return sol
 				self.weight -= delta_weight
@@ -137,18 +139,18 @@ class ShapeShifter:
 			self.partial_cover.append(cover_acc)
 			cover_acc -= p[2]
 
-		sol = self.solve_bf_prune_helper(0, [])
+		sol = self.solve_bf_prune_helper(0)
 
 		return sol
 
-	def solve_bf_prune_helper(self, l, pos):
+	def solve_bf_prune_helper(self, l):
 		if l == self.num_of_pieces:
 			if self.weight == 0:
-				pos = sorted(pos, key=lambda p: p[0])
+				#pos = sorted(pos, key=lambda p: p[0])
 				print 'Solution:'
-				for p in pos:
-					print 'Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1])
-				return pos
+				for i, p in enumerate(self.pos):
+					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+				return self.pos
 
 			return False
 
@@ -176,13 +178,14 @@ class ShapeShifter:
 					for b in range(len(p[0])):
 						self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
 						if p[a][b] != 0:
-							if self.board[i + a][j + b] == 0:
-								delta_weight -= (self.X - 1)
+							if self.board[i + a][j + b] == 1:
+								delta_weight += (self.X - 1)
 							else:
-								delta_weight += 1
+								delta_weight -= 1
 
+				self.pos[p_i] = (i, j)
 				self.weight += delta_weight
-				sol = self.solve_bf_prune_helper(l + 1, pos + [(p_i, (i, j))])
+				sol = self.solve_bf_prune_helper(l + 1)
 				if sol:
 					return sol
 				self.weight -= delta_weight
@@ -198,9 +201,31 @@ class ShapeShifter:
 		#self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
 		#self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0]))) # Sorting in order to prune as early as possible
 
-		self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
-		self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
+		self.augmented_pieces = [[i, p, sum(map(sum,p)), -1, -1] for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
+		self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0]))) # Sorting in order to prune as early as possible
+		#self.augmented_pieces = [[i, p, sum(map(sum,p))] for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
+		#self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
 
+		mult_a = 1
+		mult_b = 1
+
+		for i in range(self.num_of_pieces):
+			if mult_a <= mult_b * mult_b:
+				self.augmented_pieces[i][3] = 0
+				mult_a *= (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
+				self.augmented_pieces[i][4] = (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
+			else:
+				self.augmented_pieces[i][3] = 1
+				mult_b *= (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
+				self.augmented_pieces[i][4] = (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
+
+		for i in range(self.num_of_pieces):
+			print self.augmented_pieces[i]
+		
+		self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: p[3]))
+		self.augmented_pieces = [(p[0], p[1], p[2]) for p in self.augmented_pieces]
+
+		self.half = (self.num_of_pieces + 1) // 2
 		'''begin = 0
 		end = self.num_of_pieces - 1
 		begin_size = 1
@@ -214,11 +239,11 @@ class ShapeShifter:
 				begin_size *= (self.board_size[0] - len(self.augmented_pieces[begin][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[begin][1][0]) + 1)
 				begin += 1'''
 
-		tmp = 1
+		'''tmp = 1
 		self.half = self.num_of_pieces - 1
-		while tmp < 10000 and self.half > 0:
+		while tmp < 30000 and self.half > 0:
 			tmp *= (self.board_size[0] - len(self.augmented_pieces[self.half][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[self.half][1][0]) + 1)
-			self.half -= 1
+			self.half -= 1'''
 
 		#self.half = self.num_of_pieces # This makes it just simple brute-force with pruning
 
@@ -271,16 +296,16 @@ class ShapeShifter:
 
 				for a in range(len(p)):
 					for b in range(len(p[0])):
-						self.middle_board[i + a][j + b] = (self.middle_board[i + a][j + b] - p[a][b]) % self.X
 						if p[a][b] != 0:
-							if self.middle_board[i + a][j + b] == 0:
+							if self.board[i + a][j + b] == 1:
 								delta_weight += (self.X - 1)
 							else:
 								delta_weight -= 1
+						self.middle_board[i + a][j + b] = (self.middle_board[i + a][j + b] - p[a][b]) % self.X
 
-				self.middle_weight -= delta_weight
-				self.solve_bi_directional_backward_helper(l + 1, pos + [(p_i, (i, j))])
 				self.middle_weight += delta_weight
+				self.solve_bi_directional_backward_helper(l + 1, pos + [(p_i, (i, j))])
+				self.middle_weight -= delta_weight
 
 				for a in range(len(p)):
 					for b in range(len(p[0])):
@@ -324,10 +349,10 @@ class ShapeShifter:
 					for b in range(len(p[0])):
 						self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
 						if p[a][b] != 0:
-							if self.board[i + a][j + b] == 0:
-								delta_weight -= (self.X - 1)
+							if self.board[i + a][j + b] == 1:
+								delta_weight += (self.X - 1)
 							else:
-								delta_weight += 1
+								delta_weight -= 1
 
 				self.weight += delta_weight
 				sol = self.solve_bi_directional_forward_helper(l + 1, pos + [(p_i, (i, j))])

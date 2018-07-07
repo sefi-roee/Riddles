@@ -211,12 +211,14 @@ class ShapeShifter:
 
 		mult_a = 1
 		mult_b = 1
+		self.half = 0
 
 		for i in range(self.num_of_pieces):
-			if mult_a <= mult_b * mult_b:
+			if mult_a <= mult_b * 1000:
 				self.augmented_pieces[i][3] = 0
 				mult_a *= (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
-				self.augmented_pieces[i][4] = (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
+				self.augmented_pieces[i][4] = (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)				
+				self.half += 1
 			else:
 				self.augmented_pieces[i][3] = 1
 				mult_b *= (self.board_size[0] - len(self.augmented_pieces[i][1]) + 1) * (self.board_size[1] - len(self.augmented_pieces[i][1][0]) + 1)
@@ -228,7 +230,7 @@ class ShapeShifter:
 		self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: p[3]))
 		self.augmented_pieces = [(p[0], p[1], p[2]) for p in self.augmented_pieces]
 
-		self.half = (self.num_of_pieces + 1) // 2
+		#self.half = (self.num_of_pieces + 1) // 2
 		'''begin = 0
 		end = self.num_of_pieces - 1
 		begin_size = 1

@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 import re, time, sys
+import argparse
 from shapeshifter_solver import ShapeShifter
 
 
@@ -128,11 +129,17 @@ with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 		print >>out_file, '{}x{}'.format(len(next_shape), len(next_shape[0]))
 		print >>out_file, print_elem(next_shape),
 
+parser = argparse.ArgumentParser(description='Automatic solver for shapeshifter game (Interactive with the web site).')
+parser.add_argument('alg', help='algorithm (bf/bf_prune/bi)')
+parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+
+args = parser.parse_args()
+
 startTime = time.clock()
-solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])), True)
+solver = ShapeShifter('./board_{:02d}'.format(int(level.split()[-1])), args.verbose)
 print (solver)
 #sol = solver.solve('bf_prune')
-sol = solver.solve('bi')
+sol = solver.solve(args.alg)
 #sol = sorted(sol, key=lambda x: x[0])
 print sol
 

@@ -141,7 +141,6 @@ print (solver)
 #sol = solver.solve('bf_prune')
 sol = solver.solve(args.alg)
 #sol = sorted(sol, key=lambda x: x[0])
-print sol
 
 if sol == None:
 	print 'No solution found'
@@ -152,9 +151,9 @@ for i, s in enumerate(sol):
 	print '\r',
 	print '\tPlacing piece {}/{}...'.format(i+1, len(sol)),
 	sys.stdout.flush()
-	driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(s[1][0] + 1, s[1][1] + 1)).click()
+	driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(s[0] + 1, s[1] + 1)).click()
 
 print ' Done!'
 
 elapsedTime = time.clock() - startTime
-print ("Board solved in (", __name__, ") is: ", elapsedTime, " sec")
+print 'Board solved in ({}) is: {} sec'.format(__name__, elapsedTime)

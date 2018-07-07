@@ -40,7 +40,6 @@ class ShapeShifter:
 					piece = [list(map(int, line)) for line in piece]
 					# Need to validate piece
 					self.pieces.append(piece)
-				self.pos = [0 for i in range(self.num_of_pieces)]
 		except IOError:
 			print ('unable to parse file {}'.format(fn))
 			sys.exit()
@@ -75,6 +74,8 @@ class ShapeShifter:
 			return self.solve_bi_directional()
 
 	def solve_bf(self):
+		self.pos = [0 for i in range(self.num_of_pieces)]
+
 		sol = self.solve_bf_helper(0)
 
 		return sol
@@ -138,6 +139,8 @@ class ShapeShifter:
 		for p in self.augmented_pieces:
 			self.partial_cover.append(cover_acc)
 			cover_acc -= p[2]
+
+		self.pos = [0 for i in range(self.num_of_pieces)]
 
 		sol = self.solve_bf_prune_helper(0)
 
@@ -260,20 +263,22 @@ class ShapeShifter:
 		self.middle_weight = 0
 
 		print 'Searching backward...'
-		self.solve_bi_directional_backward_helper(self.half, [])
+		self.middle_pos = [0 for _ in range(self.half, self.num_of_pieces)]
+		self.solve_bi_directional_backward_helper(self.half)
 		print 'Searching backward... Done'
 
 		self.max_middle_weight = max(self.middle_weights)
 
 		print 'Searching forward...'
-		sol = self.solve_bi_directional_forward_helper(0, [])
+		self.pos = [0 for _ in range(self.half)]
+		sol = self.solve_bi_directional_forward_helper(0)
 		print 'Searching forward... Done'
 
 		return sol
 
-	def solve_bi_directional_backward_helper(self, l, pos):
+	def solve_bi_directional_backward_helper(self, l):
 		if l == self.num_of_pieces:
-			self.middle_boards[hash(str(self.middle_board))] = pos
+			self.middle_boards[hash(str(self.middle_board))] = self.middle_pos[:]
 			self.middle_weights[self.middle_weight] = True
 
 			return
@@ -303,8 +308,9 @@ class ShapeShifter:
 								delta_weight -= 1
 						self.middle_board[i + a][j + b] = (self.middle_board[i + a][j + b] - p[a][b]) % self.X
 
+				self.middle_pos[l - self.half] = (i, j)
 				self.middle_weight += delta_weight
-				self.solve_bi_directional_backward_helper(l + 1, pos + [(p_i, (i, j))])
+				self.solve_bi_directional_backward_helper(l + 1)
 				self.middle_weight -= delta_weight
 
 				for a in range(len(p)):
@@ -314,13 +320,16 @@ class ShapeShifter:
 		if self.verbose:
 			sys.stdout.write('\033[F') # Move cursor up on line
 
-	def solve_bi_directional_forward_helper(self, l, pos):
+	def solve_bi_directional_forward_helper(self, l):
 		if l == self.half:
 			if hash(str(self.board)) in self.middle_boards:
-				pos = sorted(pos + self.middle_boards[hash(str(self.board))], key=lambda p: p[0])
+				pos = self.pos + self.middle_boards[hash(str(self.board))]
+				pos = [(self.augmented_pieces[i][0], p) for i, p in enumerate(pos)]
+				pos = map(lambda p: p[1], sorted(pos, key=lambda p: p[0]))
+				
 				print 'Solution:'
-				for p in pos:
-					print 'Piece #{}, Pos: {},{}'.format(p[0], p[1][0], p[1][1])
+				for i, p in enumerate(pos):
+					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
 				return pos
 
 			return False
@@ -354,8 +363,9 @@ class ShapeShifter:
 							else:
 								delta_weight -= 1
 
+				self.pos[l] = (i, j)
 				self.weight += delta_weight
-				sol = self.solve_bi_directional_forward_helper(l + 1, pos + [(p_i, (i, j))])
+				sol = self.solve_bi_directional_forward_helper(l + 1)
 				if sol:
 					return sol
 				self.weight -= delta_weight

@@ -130,7 +130,7 @@ with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 		print >>out_file, print_elem(next_shape),
 
 parser = argparse.ArgumentParser(description='Automatic solver for shapeshifter game (Interactive with the web site).')
-parser.add_argument('alg', help='algorithm (bf/bf_prune/bi)')
+parser.add_argument('alg', help='algorithm (bf/bf_prune/bi/bc)')
 parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
 args = parser.parse_args()

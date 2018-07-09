@@ -1,4 +1,4 @@
-	import time
+import time
 import sys
 import argparse
 from copy import deepcopy

@@ -1,4 +1,4 @@
-import time
+	import time
 import sys
 import argparse
 from copy import deepcopy
@@ -114,10 +114,10 @@ class ShapeShifter:
 					for b in range(len(p[0])):
 						self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
 						if p[a][b] != 0:
-							if self.board[i + a][j + b] == 0:
-								delta_weight -= (self.X - 1)
+							if self.board[i + a][j + b] == 1:
+								delta_weight += (self.X - 1)
 							else:
-								delta_weight += 1
+								delta_weight -= 1
 
 				self.pos[l] = (i, j)
 				self.weight += delta_weight
@@ -580,9 +580,10 @@ class ShapeShifter:
 				pos = [0 for _ in range(self.num_of_pieces)]
 				for i, pieces in enumerate(self.sol):
 					for p in pieces:
-						print 'Piece #{}, Pos: {},{}'.format(p, i // self.board_size[1], i % self.board_size[1])
 						pos[p] = (i // self.board_size[1], i % self.board_size[1])
 
+				for i, p in enumerate(pos):
+					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
 				return pos
 
 			return False

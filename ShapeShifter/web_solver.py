@@ -108,7 +108,7 @@ for next_shape_e in next_shapes_e:
 	next_shapes.append(get_shape_from_e(next_shape_e))
 
 print 'Level: {}'.format(level)
-print 'Board size: {},{}'.format(size[0], size[1])
+print 'Board size: {},{}'.format(size[1], size[0])
 print 'Board:'
 print print_elem(board, ' ', 1)
 print 'Shapes:'

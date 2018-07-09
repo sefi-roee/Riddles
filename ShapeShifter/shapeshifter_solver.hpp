@@ -9,18 +9,22 @@
 
 class ShapeShifter {
 public:
-	ShapeShifter(const std::string& fileName, bool verbose = false);
+	ShapeShifter(const std::string& fileName);
 	~ShapeShifter();
 
 	void Solve(const std::string &algorithm = "bf");
 
-	void SolveBF();
+	// Brute-Force solver
+	bool SolveBF();
 
 private:
-	bool verbose;
 	unsigned int X;
 	unsigned int boardSize[2];
 	unsigned int **board;
 	unsigned int numOfPieces;
 	Piece **pieces;
+	std::pair<unsigned int, unsigned int> *sol;
+	int weight;
+
+	bool SolveBFHelper(unsigned int l);
 };

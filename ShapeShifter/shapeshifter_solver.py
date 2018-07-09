@@ -74,6 +74,8 @@ class ShapeShifter:
 			return self.solve_bi_directional()
 		elif alg == 'bc':
 			return self.solve_board_coverage()
+		elif alg == 'bf_i':
+			return self.solve_bf_informed_prune()
 
 	def solve_bf(self):
 		self.pos = [0 for i in range(self.num_of_pieces)]
@@ -533,7 +535,7 @@ class ShapeShifter:
 
 		print 'Generating super pieces...',
 		self.solve_board_coverage_generate_super_pieces(0, set(), 0, 0)
-		#self.super_pieces = list(sorted(self.super_pieces, key = lambda sp: len(sp[0])))
+		self.super_pieces = list(reversed(sorted(self.super_pieces, key = lambda sp: len(sp[0]))))
 		print 'Done'
 
 		self.coverage_capacity = [sum(map(sum,p)) for p in self.pieces]
@@ -643,10 +645,93 @@ class ShapeShifter:
 		if self.verbose:
 			sys.stdout.write('\033[F') # Move cursor up on line
 
+	def solve_bf_informed_prune(self):
+		self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
+		self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
+
+		cover_acc = sum([p[2] for p in self.augmented_pieces])
+
+		self.partial_cover = []
+		for p in self.augmented_pieces:
+			self.partial_cover.append(cover_acc)
+			cover_acc -= p[2]
+
+		self.pos = [0 for i in range(self.num_of_pieces)]
+
+		sol = self.solve_bf_informed_prune_helper(0)
+
+		return sol
+
+	def solve_bf_informed_prune_helper(self, l):
+		if l == self.num_of_pieces:
+			if self.weight == 0:
+				#pos = sorted(pos, key=lambda p: p[0])
+				print 'Solution:'
+				for i, p in enumerate(self.pos):
+					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+				return self.pos
+
+			return False
+
+		# Prune if not enough "coverage capacity" left
+		if self.partial_cover[l] < self.weight:
+			return False
+
+		p_i, p, p_cover = self.augmented_pieces[l]
+		
+		if self.verbose:
+			position_tot = (self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1)
+			position_cur = 0
+			print ''
+
+		# Prioritize positions according to wegiht lose
+		positions = [None for _ in range((self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1))]
+		positions_i = 0
+		for i in range(self.board_size[0] - len(p) + 1):
+			for j in range(self.board_size[1] - len(p[0]) + 1):
+				delta_weight = 0
+
+				for a in range(len(p)):
+					for b in range(len(p[0])):
+						tmp = (self.board[i + a][j + b] + p[a][b]) % self.X
+						if p[a][b] != 0:
+							if tmp == 1:
+								delta_weight += (self.X - 1)
+							else:
+								delta_weight -= 1
+
+				positions[positions_i] = (delta_weight, i, j)
+				positions_i += 1
+		positions = sorted(positions, key=lambda p: p[0])
+
+		for delta_weight, i, j in positions:
+			if self.verbose:
+				position_cur += 1
+				print '\r{}/{}...'.format(position_cur, position_tot),
+				sys.stdout.flush()
+
+			for a in range(len(p)):
+				for b in range(len(p[0])):
+					self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
+
+			self.pos[p_i] = (i, j)
+			self.weight += delta_weight
+			sol = self.solve_bf_prune_helper(l + 1)
+			if sol:
+				return sol
+			self.weight -= delta_weight
+
+			for a in range(len(p)):
+				for b in range(len(p[0])):
+					self.board[i + a][j + b] = (self.board[i + a][j + b] - p[a][b]) % self.X
+
+		if self.verbose:
+			sys.stdout.write('\033[F') # Move cursor up on line
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Automatic solver for shapeshifter game.')
 	parser.add_argument('file_name', help='grid file name')
-	parser.add_argument('alg', help='algorithm (bf/bf_prune/bi/bc)')
+	parser.add_argument('alg', help='algorithm (bf/bf_prune/bi/bc/bf_i)')
 	parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
 	args = parser.parse_args()

@@ -308,21 +308,23 @@ void ShapeShifter::SolveBFAll() {
 	totSolutions = this->solutions.size();
 	oFile.open(this->fn + "_sol_bf_all_c++", std::ios::out);
 
-	for (unsigned int i = 0; i < min(totSolutions, 10000); ++i) {
-		//std::cout << "Solution (" << ++curSolution << "/" << totSolutions << "):" << std::endl;
+	for (unsigned int i = 0; i < totSolutions && i < 10000; ++i) {
+		curSolution++;
+		//std::cout << "Solution (" << curSolution << "/" << totSolutions << "):" << std::endl;
 		oFile     << "Solution (" << curSolution << "/" << totSolutions << "):" << std::endl;
 
 		for (unsigned int j = 0; j < this->solutions[i].size(); ++j) {
 			//std::cout << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
 			oFile     << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
 		}
-
-		std::cout << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
-		std::cout << "Total recursive calls: " << this->total_recursive_calls << std::endl;
-		oFile     << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
-		oFile     << "Total recursive calls: " << this->total_recursive_calls << std::endl;
-		oFile     << "Total time: " << (clock()-start_s)/double(CLOCKS_PER_SEC) << " secs" << std::endl;
 	}
+	
+	std::cout << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
+	std::cout << "Total recursive calls: " << this->total_recursive_calls << std::endl;
+	oFile     << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
+	oFile     << "Total recursive calls: " << this->total_recursive_calls << std::endl;
+	oFile     << "Total time: " << (clock()-start_s)/double(CLOCKS_PER_SEC) << " secs" << std::endl;
+
 	oFile.close();
 }
 
@@ -353,7 +355,7 @@ bool ShapeShifter::SolveBFAllHelper(unsigned int l) {
 		for (unsigned int j = 0; j < this->boardSize[1] - p->width + 1; ++j) {
 			#ifdef VERBOSE
 			curPosition++;
-			std::cout << "\r" << curPosition << "/" << totPositions << "..." << std::endl;
+			std::cout << "\r" << curPosition << "/" << totPositions << "...";
 			#endif
 
 			delta_weight = 0;

@@ -9,6 +9,7 @@ class ShapeShifter:
 
 	def __init__(self, fn, verbose = False):
 		self.verbose = verbose
+		self.fn = fn
 		try:
 			with open(fn, 'r') as f:
 				# Read X
@@ -76,6 +77,11 @@ class ShapeShifter:
 			return self.solve_board_coverage()
 		elif alg == 'bf_i':
 			return self.solve_bf_informed_prune()
+
+		elif alg == 'bf_all':
+			return self.solve_bf_all()
+		elif alg == 'bf_prune_all':
+			return self.solve_bf_prune_all()
 
 	def solve_bf(self):
 		self.pos = [0 for i in range(self.num_of_pieces)]
@@ -729,10 +735,177 @@ class ShapeShifter:
 		if self.verbose:
 			sys.stdout.write('\033[F') # Move cursor up on line
 
+	def solve_bf_all(self):
+		self.pos = [0 for i in range(self.num_of_pieces)]
+		self.solutions = []
+		self.total_boards_scanned = 0
+		self.total_recursive_calls = 0
+
+
+		self.solve_bf_all_helper(0)
+
+		self.solutions = sorted(self.solutions)
+		with open(self.fn+'_sol_bf_all_python', 'w') as sol_file:
+			for s, sol in enumerate(self.solutions[:10000]):
+				#print 'Solution ({}/{}):'.format(s + 1, len(self.solutions))
+				print >>sol_file, 'Solution ({}/{}):'.format(s + 1, len(self.solutions))
+
+				for i, p in enumerate(sol):
+						#print '    Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+						print >>sol_file, '    Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+
+			print '\nTotal boards scanned: {}'.format(self.total_boards_scanned)
+			print 'Total recursive calls: {}'.format(self.total_recursive_calls)
+			print >>sol_file, '\nTotal boards scanned: {}'.format(self.total_boards_scanned)
+			print >>sol_file, 'Total recursive calls: {}'.format(self.total_recursive_calls)
+			print >>sol_file, 'Total time: {} secs'.format(time.clock() - startTime)
+
+		return self.pos
+
+	def solve_bf_all_helper(self, l):
+		self.total_recursive_calls += 1
+
+		if l == self.num_of_pieces:
+			if self.weight == 0:
+				self.solutions.append(self.pos[:])
+
+			self.total_boards_scanned += 1
+
+			return False
+
+		p = self.pieces[l]
+		
+		if self.verbose:
+			position_tot = (self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1)
+			position_cur = 0
+			print ''
+
+		for i in range(self.board_size[0] - len(p) + 1):
+			for j in range(self.board_size[1] - len(p[0]) + 1):
+				if self.verbose:
+					position_cur += 1
+					print '\r{}/{}...'.format(position_cur, position_tot),
+					sys.stdout.flush()
+
+				delta_weight = 0
+
+				for a in range(len(p)):
+					for b in range(len(p[0])):
+						self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
+						if p[a][b] != 0:
+							if self.board[i + a][j + b] == 1:
+								delta_weight += (self.X - 1)
+							else:
+								delta_weight -= 1
+
+				self.pos[l] = (i, j)
+				self.weight += delta_weight
+				
+				self.solve_bf_all_helper(l + 1)
+
+				self.weight -= delta_weight
+
+				for a in range(len(p)):
+					for b in range(len(p[0])):
+						self.board[i + a][j + b] = (self.board[i + a][j + b] - p[a][b]) % self.X
+
+		if self.verbose:
+			sys.stdout.write('\033[F') # Move cursor up on line
+
+	def solve_bf_prune_all(self):
+		self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
+		self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
+
+		cover_acc = sum([p[2] for p in self.augmented_pieces])
+
+		self.partial_cover = []
+		for p in self.augmented_pieces:
+			self.partial_cover.append(cover_acc)
+			cover_acc -= p[2]
+
+		self.pos = [0 for i in range(self.num_of_pieces)]
+		self.solutions = []
+		self.total_boards_scanned = 0
+		self.total_recursive_calls = 0
+
+		self.solve_bf_prune_all_helper(0)
+
+		self.solutions = sorted(self.solutions)
+		with open(self.fn+'_sol_bf_prune_all_python', 'w') as sol_file:
+			for s, sol in enumerate(self.solutions[:10000]):
+				#print 'Solution ({}/{}):'.format(s + 1, len(self.solutions))
+				print >>sol_file, 'Solution ({}/{}):'.format(s + 1, len(self.solutions))
+
+				for i, p in enumerate(sol):
+						#print '    Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+						print >>sol_file, '    Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
+
+			print '\nTotal boards scanned: {}'.format(self.total_boards_scanned)
+			print 'Total recursive calls: {}'.format(self.total_recursive_calls)
+			print >>sol_file, 'Total boards scanned: {}'.format(self.total_boards_scanned)
+			print >>sol_file, 'Total recursive calls: {}'.format(self.total_recursive_calls)
+			print >>sol_file, 'Total time: {} secs'.format(time.clock() - startTime)
+
+		return self.pos
+
+	def solve_bf_prune_all_helper(self, l):
+		self.total_recursive_calls += 1
+
+		if l == self.num_of_pieces:
+			if self.weight == 0:
+				self.solutions.append(self.pos[:])
+
+			self.total_boards_scanned += 1
+
+			return False
+
+		# Prune if not enough "coverage capacity" left
+		if self.partial_cover[l] < self.weight:
+			return False
+
+		p_i, p, p_cover = self.augmented_pieces[l]
+		
+		if self.verbose:
+			position_tot = (self.board_size[0] - len(p) + 1) * (self.board_size[1] - len(p[0]) + 1)
+			position_cur = 0
+			print ''
+
+		for i in range(self.board_size[0] - len(p) + 1):
+			for j in range(self.board_size[1] - len(p[0]) + 1):
+				if self.verbose:
+					position_cur += 1
+					print '\r{}/{}...'.format(position_cur, position_tot),
+					sys.stdout.flush()
+
+				delta_weight = 0
+
+				for a in range(len(p)):
+					for b in range(len(p[0])):
+						self.board[i + a][j + b] = (self.board[i + a][j + b] + p[a][b]) % self.X
+						if p[a][b] != 0:
+							if self.board[i + a][j + b] == 1:
+								delta_weight += (self.X - 1)
+							else:
+								delta_weight -= 1
+
+				self.pos[p_i] = (i, j)
+				self.weight += delta_weight
+				
+				self.solve_bf_prune_all_helper(l + 1)
+				
+				self.weight -= delta_weight
+
+				for a in range(len(p)):
+					for b in range(len(p[0])):
+						self.board[i + a][j + b] = (self.board[i + a][j + b] - p[a][b]) % self.X
+
+		if self.verbose:
+			sys.stdout.write('\033[F') # Move cursor up on line
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Automatic solver for shapeshifter game.')
 	parser.add_argument('file_name', help='grid file name')
-	parser.add_argument('alg', help='algorithm (bf/bf_prune/bi/bc/bf_i)')
+	parser.add_argument('alg', help='algorithm (bf/bf_prune/bi/bc/bf_i/bf_all/bf_prune_all)')
 	parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
 	args = parser.parse_args()

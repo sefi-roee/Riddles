@@ -17,6 +17,8 @@ public:
 	// Brute-Force solver
 	bool SolveBF();
 
+	bool SolveBFPrune();
+
 private:
 	unsigned int X;
 	unsigned int boardSize[2];
@@ -27,4 +29,5 @@ private:
 	int weight;
 
 	bool SolveBFHelper(unsigned int l);
+	bool SolveBFPruneHelper(unsigned int l, const std::pair<const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
 };

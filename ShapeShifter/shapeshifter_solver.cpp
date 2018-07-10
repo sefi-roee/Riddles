@@ -1,6 +1,9 @@
 #include "shapeshifter_solver.hpp"
 
 #include <algorithm>
+#include <ctime>
+
+extern int start_s;
 
 bool pieceComperatorBackward(std::tuple<unsigned int, const Piece*, unsigned int> i, std::tuple<unsigned int, const Piece*, unsigned int> j) {
 	return (std::get<1>(i)->height * std::get<1>(i)->width) > (std::get<1>(j)->height * std::get<1>(j)->width);
@@ -11,6 +14,8 @@ ShapeShifter::ShapeShifter(const std::string& fileName) {
 	std::string line;
 	char tmp;
 	unsigned int height, width;
+
+	this->fn = fileName;
 
 	iFile.open(fileName, std::ios::in);
 
@@ -32,7 +37,7 @@ ShapeShifter::ShapeShifter(const std::string& fileName) {
 	}
 
 	iFile >> this->numOfPieces;
-	this->pieces = new Piece* [this->numOfPieces];
+	this->pieces.reserve(this->numOfPieces);
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
 		iFile >> height >> tmp >> width;
 		this->pieces[p] = new Piece(height, width);
@@ -46,7 +51,10 @@ ShapeShifter::ShapeShifter(const std::string& fileName) {
 		}
 	}
 
-	this->sol = new std::pair<unsigned int, unsigned int> [this->numOfPieces];
+	this->sol.resize(this->numOfPieces);
+
+	this->total_boards_scanned = 0;
+	this->total_recursive_calls = 0;
 
 	iFile.close();
 
@@ -85,19 +93,20 @@ ShapeShifter::~ShapeShifter() {
 
 	for (unsigned int i = 0; i < this->numOfPieces; ++i)
 		delete this->pieces[i];
-	delete this->pieces;
-
-	delete this->sol;
 }
 
 void ShapeShifter::Solve(const std::string &algorithm) {
-	bool isFound;
+	bool isFound = false;
 
 	if (!algorithm.compare("bf")) {
 		isFound = this->SolveBF();
 	}
 	else if (!algorithm.compare("bf_prune")) {
 		isFound = this->SolveBFPrune();
+	}
+
+	else if (!algorithm.compare("bf_all")) {
+		this->SolveBFAll();
 	}
 
 	if (isFound)
@@ -189,14 +198,12 @@ bool ShapeShifter::SolveBFPrune() {
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
 		int sum = 0;
 
-		//augmentedPieces[p].first = this->pieces[p];
 		for (unsigned int a = 0; a < this->pieces[p]->height; ++a) {
 			for (unsigned int b = 0; b < this->pieces[p]->width; ++b) {
 				sum += this->pieces[p]->p[a][b];
 			}
 		}
 
-		//augmentedPieces[p].second = sum;
 		augmentedPieces[p] = std::make_tuple(p, this->pieces[p], sum);
 		totalCover += sum;
 	}
@@ -279,6 +286,103 @@ bool ShapeShifter::SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned 
 			for (unsigned int a = 0; a < std::get<1>(p)->height; ++a) {
 				for (unsigned int b = 0; b < std::get<1>(p)->width; ++b) {
 					this->board[i + a][j + b] = (this->board[i + a][j + b] - std::get<1>(p)->p[a][b] + this->X) % this->X;
+				}
+			}
+		}
+	}
+
+	#ifdef VERBOSE
+	std::cout << "\x1b[A";;	
+	#endif
+
+	return false;
+}
+
+void ShapeShifter::SolveBFAll() {
+	std::ofstream oFile;
+	unsigned int totSolutions = 0;
+	unsigned int curSolution = 0;
+
+	this->SolveBFAllHelper(0);
+
+	totSolutions = this->solutions.size();
+	oFile.open(this->fn + "_sol_bf_all_c++", std::ios::out);
+
+	for (unsigned int i = 0; i < min(totSolutions, 10000); ++i) {
+		//std::cout << "Solution (" << ++curSolution << "/" << totSolutions << "):" << std::endl;
+		oFile     << "Solution (" << curSolution << "/" << totSolutions << "):" << std::endl;
+
+		for (unsigned int j = 0; j < this->solutions[i].size(); ++j) {
+			//std::cout << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
+			oFile     << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
+		}
+
+		std::cout << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
+		std::cout << "Total recursive calls: " << this->total_recursive_calls << std::endl;
+		oFile     << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
+		oFile     << "Total recursive calls: " << this->total_recursive_calls << std::endl;
+		oFile     << "Total time: " << (clock()-start_s)/double(CLOCKS_PER_SEC) << " secs" << std::endl;
+	}
+	oFile.close();
+}
+
+bool ShapeShifter::SolveBFAllHelper(unsigned int l) {
+	int delta_weight;
+
+	this->total_recursive_calls++;
+
+	if (l == this->numOfPieces) {
+		if (this->weight == 0) {
+			this->solutions.push_back(this->sol);
+		}
+
+		this->total_boards_scanned++;
+
+		return false;
+	}
+
+	const Piece *p = this->pieces[l];
+
+	#ifdef VERBOSE
+	unsigned int totPositions = (this->boardSize[0] - p->height + 1) * (this->boardSize[1] - p->width + 1);
+	unsigned int curPosition  = 0;
+	std::cout << std::endl;	
+	#endif
+
+	for (unsigned int i = 0; i < this->boardSize[0] - p->height + 1; ++i) {
+		for (unsigned int j = 0; j < this->boardSize[1] - p->width + 1; ++j) {
+			#ifdef VERBOSE
+			curPosition++;
+			std::cout << "\r" << curPosition << "/" << totPositions << "..." << std::endl;
+			#endif
+
+			delta_weight = 0;
+
+			for (unsigned int a = 0; a < p->height; ++a) {
+				for (unsigned int b = 0; b < p->width; ++b) {
+					this->board[i + a][j + b] = (this->board[i + a][j + b] + p->p[a][b]) % this->X;
+
+					if (p->p[a][b] != 0) {
+						if (this->board[i + a][j + b] == 1)
+							delta_weight += (this->X - 1);
+						else
+							delta_weight--;
+					}
+				}
+			}
+
+			this->sol[l].first = i;
+			this->sol[l].second = j;
+
+			this->weight += delta_weight;
+
+			this->SolveBFAllHelper(l + 1);
+
+			this->weight -= delta_weight;
+
+			for (unsigned int a = 0; a < p->height; ++a) {
+				for (unsigned int b = 0; b < p->width; ++b) {
+					this->board[i + a][j + b] = (this->board[i + a][j + b] - p->p[a][b] + this->X) % this->X;
 				}
 			}
 		}

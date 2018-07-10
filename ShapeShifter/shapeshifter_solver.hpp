@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <tuple>
 
 #include "piece.hpp"
 
@@ -29,5 +30,5 @@ private:
 	int weight;
 
 	bool SolveBFHelper(unsigned int l);
-	bool SolveBFPruneHelper(unsigned int l, const std::pair<const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
+	bool SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
 };

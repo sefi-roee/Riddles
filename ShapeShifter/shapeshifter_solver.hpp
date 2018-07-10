@@ -19,7 +19,8 @@ public:
 	bool SolveBF();			// Brute-Force solver
 	bool SolveBFPrune();	// Brute-Force with pruning
 
-	void SolveBFAll();
+	void SolveBFAll();		// Brute-Force solver (finds all solutions)
+	void SolveBFPruneAll();	// Brute-Force solver (finds all solutions)
 
 private:
 	std::string fn;
@@ -39,4 +40,5 @@ private:
 	bool SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
 
 	bool SolveBFAllHelper(unsigned int l);
+	bool SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
 };

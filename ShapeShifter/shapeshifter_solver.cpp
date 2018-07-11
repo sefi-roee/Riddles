@@ -308,6 +308,8 @@ void ShapeShifter::SolveBFAll() {
 
 	this->SolveBFAllHelper(0);
 
+	std::sort(this->solutions.begin(), this->solutions.end());
+
 	totSolutions = this->solutions.size();
 	oFile.open(this->fn + "_sol_bf_all_c++", std::ios::out);
 
@@ -430,6 +432,8 @@ void ShapeShifter::SolveBFPruneAll() {
 	unsigned int curSolution = 0;
 
 	this->SolveBFPruneAllHelper(0, augmentedPieces, partialCover);
+
+	std::sort(this->solutions.begin(), this->solutions.end());
 
 	totSolutions = this->solutions.size();
 	oFile.open(this->fn + "_sol_bf_prune_all_c++", std::ios::out);

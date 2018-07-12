@@ -32,6 +32,7 @@ public:
 	bool SolveBF();			// Brute-Force solver
 	bool SolveBFPrune();	// Brute-Force solver with pruning
 	bool SolveBD();			// Bi-Directional solver
+	bool SolveBDPrune();	// Bi-Directional solver with pruning
 
 	void SolveBFAll();		// Brute-Force solver (finds all solutions)
 	void SolveBFPruneAll();	// Brute-Force solver (finds all solutions)
@@ -54,7 +55,7 @@ private:
 	unsigned char **middleBoard;
 	int *partialCover;
 	std::vector<std::pair<unsigned char, unsigned char>> middlePos;
-	int middleWeight;
+	int middleWeight, maxMiddleWeight;
 	std::unordered_map< std::pair<std::size_t, std::size_t>, std::vector<std::pair<unsigned char, unsigned char>>, pair_hash> middlePositions;
 
 	bool SolveBFHelper(unsigned int l);
@@ -62,6 +63,8 @@ private:
 
 	void SolveBDBackwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
 	bool SolveBDForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
+	void SolveBDPruneBackwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
+	bool SolveBDPruneForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
 	
 	void SolveBFAllHelper(unsigned int l);
 	void SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces);

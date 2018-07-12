@@ -4,9 +4,9 @@ Piece::Piece(unsigned int height, unsigned int width) {
 	this->height = height;
 	this->width = width;
 
-	this->p = new unsigned int* [height];
+	this->p = new unsigned char* [height];
 	for (unsigned int i = 0; i < this->height; ++i)
-		this->p[i] = new unsigned int [width];
+		this->p[i] = new unsigned char [width];
 }
 
 Piece::~Piece() {

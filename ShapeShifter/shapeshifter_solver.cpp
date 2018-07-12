@@ -33,10 +33,10 @@ ShapeShifter::ShapeShifter(const std::string& fileName) {
 	iFile >> this->X;
 	iFile >> this->boardSize[0] >> tmp >> boardSize[1];
 
-	this->board = new unsigned int* [this->boardSize[0]];
+	this->board = new unsigned char* [this->boardSize[0]];
 	this->weight = 0;
 	for (unsigned int i = 0; i < this->boardSize[0]; ++i)
-		this->board[i] = new unsigned int [this->boardSize[1]];
+		this->board[i] = new unsigned char [this->boardSize[1]];
 
 	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
 		iFile >> line;
@@ -78,7 +78,7 @@ ShapeShifter::ShapeShifter(const std::string& fileName) {
 	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
 		std::cout << "\t";
 		for (unsigned int j = 0; j < this->boardSize[1]; ++j) {
-			std::cout << this->board[i][j] << " ";
+			std::cout << (unsigned int)this->board[i][j] << " ";
 		}
 		std::cout << std::endl;
 	}
@@ -89,7 +89,7 @@ ShapeShifter::ShapeShifter(const std::string& fileName) {
 		for (unsigned int i = 0; i < this->pieces[p]->height; ++i) {
 			std::cout << "\t\t";
 			for (unsigned int j = 0; j < this->pieces[p]->width; ++j) {
-				std::cout << this->pieces[p]->p[i][j] << " ";
+				std::cout << (unsigned int)this->pieces[p]->p[i][j] << " ";
 			}
 			std::cout << std::endl;
 		}
@@ -125,6 +125,9 @@ void ShapeShifter::Solve(const std::string &algorithm) {
 	else if (!algorithm.compare("bf_prune_all")) {
 		this->SolveBFPruneAll();
 	}
+	else if (!algorithm.compare("bd_all")) {
+		this->SolveBDAll();
+	}
 
 	if (isFound) {
 		std::cout << "Found!!!" << std::endl;
@@ -140,11 +143,7 @@ bool ShapeShifter::SolveBFHelper(unsigned int l) {
 
 	if (l == this->numOfPieces) {
 		if (this->weight == 0) {
-			std::cout << "Solution found!" << std::endl;
-
-			for (unsigned int i = 0; i < this->numOfPieces; ++i) {
-				std::cout << "Piece #" << i << ", Pos: " << this->sol[i].first << "," << this->sol[i].second << std::endl;
-			}
+			this->printSolution();
 
 			return true;
 		}
@@ -158,7 +157,7 @@ bool ShapeShifter::SolveBFHelper(unsigned int l) {
 	#ifdef VERBOSE
 	unsigned int totPositions = (this->boardSize[0] - p->height + 1) * (this->boardSize[1] - p->width + 1);
 	unsigned int curPosition  = 0;
-	std::cout << std::endl;	
+	std::cout << "        " << std::endl;	
 	#endif
 
 	for (unsigned int i = 0; i < this->boardSize[0] - p->height + 1; ++i) {
@@ -209,7 +208,6 @@ bool ShapeShifter::SolveBFHelper(unsigned int l) {
 
 bool ShapeShifter::SolveBFPrune() {
 	std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces = new std::tuple<unsigned int, const Piece*, unsigned int> [this->numOfPieces];
-	int *partialCover = new int [this->numOfPieces];
 	int totalCover = 0;
 	bool flag;
 
@@ -228,29 +226,27 @@ bool ShapeShifter::SolveBFPrune() {
 
 	std::sort(augmentedPieces, augmentedPieces + this->numOfPieces, pieceComperatorBackward);
 
+	this->partialCover = new int [this->numOfPieces];
+
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
-		partialCover[p] = totalCover;
+		this->partialCover[p] = totalCover;
 		totalCover -= std::get<2>(augmentedPieces[p]);
 	}
 
-	flag = this->SolveBFPruneHelper(0, augmentedPieces, partialCover);
+	flag = this->SolveBFPruneHelper(0, augmentedPieces);
 
 	delete augmentedPieces;
-	delete partialCover;
+	delete this->partialCover;
 
 	return flag;
 }
 
-bool ShapeShifter::SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover) {
+bool ShapeShifter::SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces) {
 	int deltaWeight;
 
 	if (l == this->numOfPieces) {
 		if (this->weight == 0) {
-			std::cout << "Solution found!" << std::endl;
-
-			for (unsigned int i = 0; i < this->numOfPieces; ++i) {
-				std::cout << "Piece #" << i << ", Pos: " << this->sol[i].first << "," << this->sol[i].second << std::endl;
-			}
+			this->printSolution();
 
 			return true;
 		}
@@ -259,7 +255,7 @@ bool ShapeShifter::SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned 
 		}
 	}
 
-	if (partialCover[l] < this->weight)
+	if (this->partialCover[l] < this->weight)
 		return false;
 
 	const std::tuple<unsigned int, const Piece*, unsigned int> &p = augmentedPieces[l];
@@ -267,7 +263,7 @@ bool ShapeShifter::SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned 
 	#ifdef VERBOSE
 	unsigned int totPositions = (this->boardSize[0] - std::get<1>(p)->height + 1) * (this->boardSize[1] - std::get<1>(p)->width + 1);
 	unsigned int curPosition  = 0;
-	std::cout << std::endl;	
+	std::cout << "        " << std::endl;	
 	#endif
 
 	for (unsigned int i = 0; i < this->boardSize[0] - std::get<1>(p)->height + 1; ++i) {
@@ -296,7 +292,7 @@ bool ShapeShifter::SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned 
 			this->sol[std::get<0>(p)].second = j;
 
 			this->weight += deltaWeight;
-			if (this->SolveBFPruneHelper(l + 1, augmentedPieces, partialCover))
+			if (this->SolveBFPruneHelper(l + 1, augmentedPieces))
 				return true;
 
 			this->weight -= deltaWeight;
@@ -341,7 +337,7 @@ bool ShapeShifter::SolveBD() {
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
 		std::get<4>(augmentedPieces[p]) = (this->boardSize[0] - std::get<1>(augmentedPieces[p])->height + 1) * 
 					 					  (this->boardSize[1] - std::get<1>(augmentedPieces[p])->width + 1);
-		if (multA <= multB * 1000) {
+		if (multA <= multB) {
 			std::get<3>(augmentedPieces[p]) = 0;
 			multA *= std::get<4>(augmentedPieces[p]);
 			this->half += 1;
@@ -354,7 +350,7 @@ bool ShapeShifter::SolveBD() {
 
 	std::sort(augmentedPieces, augmentedPieces + this->numOfPieces, pieceAComperatorBackward3);
 
-	int *partialCover = new int [this->half];
+	this->partialCover = new int [this->half];
 	int totalCover = 0;
 	bool flag;
 
@@ -363,13 +359,13 @@ bool ShapeShifter::SolveBD() {
 	}
 
 	for (unsigned int p = 0; p < this->half; ++p) {
-		partialCover[p] = totalCover;
+		this->partialCover[p] = totalCover;
 		totalCover -= std::get<2>(augmentedPieces[p]);
 	}
 
-	this->middleBoard = new unsigned int* [this->boardSize[0]];
+	this->middleBoard = new unsigned char* [this->boardSize[0]];
 	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
-		this->middleBoard[i] = new unsigned int [this->boardSize[1]];
+		this->middleBoard[i] = new unsigned char [this->boardSize[1]];
 
 		for (unsigned int j = 0; j < this->boardSize[1]; ++j)
 			this->middleBoard[i][j] = 0;
@@ -381,11 +377,15 @@ bool ShapeShifter::SolveBD() {
 	std::cout << "\rSearching backward... Done" << std::endl;
 
 	std::cout << "Searching forward..." << std::endl;
-	flag = this->SolveBDForwardHelper(0, augmentedPieces, partialCover);
+	flag = this->SolveBDForwardHelper(0, augmentedPieces);
 	std::cout << "\rSearching forward... Done" << std::endl;
 
 	delete augmentedPieces;
-	delete partialCover;
+	delete this->partialCover;
+	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
+		delete this->middleBoard[i];
+	}
+	delete this->middleBoard;
 
 	return flag;
 }
@@ -425,7 +425,7 @@ if l == self.num_of_pieces:
 	#ifdef VERBOSE
 	unsigned int totPositions = (this->boardSize[0] - std::get<1>(p)->height + 1) * (this->boardSize[1] - std::get<1>(p)->width + 1);
 	unsigned int curPosition  = 0;
-	std::cout << std::endl;	
+	std::cout << "        " << std::endl;	
 	#endif
 
 	for (unsigned int i = 0; i < this->boardSize[0] - std::get<1>(p)->height + 1; ++i) {
@@ -471,8 +471,7 @@ if l == self.num_of_pieces:
 	#endif
 }
 
-bool ShapeShifter::SolveBDForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces,
-										const int *partialCover) {
+bool ShapeShifter::SolveBDForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces) {
 	int deltaWeight;
 	std::pair<std::size_t, std::size_t> hash (0, 1);
 
@@ -488,12 +487,8 @@ bool ShapeShifter::SolveBDForwardHelper(unsigned int l, const std::tuple<unsigne
 				this->sol[std::get<0>(augmentedPieces[p + this->half])].second = it->second[p].second;
 			}
 
-			std::cout << "Solution found!" << std::endl;
+			this->printSolution();
 
-			for (unsigned int i = 0; i < this->numOfPieces; ++i) {
-				std::cout << "Piece #" << i << ", Pos: " << this->sol[i].first << "," << this->sol[i].second << std::endl;
-			}
-			
 			return true;
 		}
 
@@ -505,7 +500,7 @@ bool ShapeShifter::SolveBDForwardHelper(unsigned int l, const std::tuple<unsigne
 	#ifdef VERBOSE
 	unsigned int totPositions = (this->boardSize[0] - std::get<1>(p)->height + 1) * (this->boardSize[1] - std::get<1>(p)->width + 1);
 	unsigned int curPosition  = 0;
-	std::cout << std::endl;	
+	std::cout << "        " << std::endl;	
 	#endif
 
 	for (unsigned int i = 0; i < this->boardSize[0] - std::get<1>(p)->height + 1; ++i) {
@@ -519,7 +514,7 @@ bool ShapeShifter::SolveBDForwardHelper(unsigned int l, const std::tuple<unsigne
 
 			for (unsigned int a = 0; a < std::get<1>(p)->height; ++a) {
 				for (unsigned int b = 0; b < std::get<1>(p)->width; ++b) {
-					this->board[i + a][j + b] = (this->board[i + a][j + b] - std::get<1>(p)->p[a][b] + this->X) % this->X;
+					this->board[i + a][j + b] = (this->board[i + a][j + b] + std::get<1>(p)->p[a][b]) % this->X;
 
 					if (std::get<1>(p)->p[a][b] != 0) {
 						if (this->board[i + a][j + b] == 1)
@@ -535,7 +530,7 @@ bool ShapeShifter::SolveBDForwardHelper(unsigned int l, const std::tuple<unsigne
 			this->sol[std::get<0>(p)].second = j;
 			this->weight += deltaWeight;
 
-			if (this->SolveBDForwardHelper(l + 1, augmentedPieces, partialCover))
+			if (this->SolveBDForwardHelper(l + 1, augmentedPieces))
 				return true;
 
 			this->weight -= deltaWeight;
@@ -596,7 +591,8 @@ void ShapeShifter::SolveBFAll() {
 
 		for (unsigned int j = 0; j < this->solutions[i].size(); ++j) {
 			//std::cout << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
-			oFile     << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
+			oFile     << "    Piece #" << j << ", Pos: " << static_cast<unsigned int>(this->solutions[i][j].first) << "," 
+														 << static_cast<unsigned int>(this->solutions[i][j].second) << std::endl;
 		}
 	}
 	
@@ -609,7 +605,7 @@ void ShapeShifter::SolveBFAll() {
 	oFile.close();
 }
 
-bool ShapeShifter::SolveBFAllHelper(unsigned int l) {
+void ShapeShifter::SolveBFAllHelper(unsigned int l) {
 	int delta_weight;
 
 	this->total_recursive_calls++;
@@ -621,7 +617,7 @@ bool ShapeShifter::SolveBFAllHelper(unsigned int l) {
 
 		this->total_boards_scanned++;
 
-		return false;
+		return;
 	}
 
 	const Piece *p = this->pieces[l];
@@ -629,7 +625,7 @@ bool ShapeShifter::SolveBFAllHelper(unsigned int l) {
 	#ifdef VERBOSE
 	unsigned int totPositions = (this->boardSize[0] - p->height + 1) * (this->boardSize[1] - p->width + 1);
 	unsigned int curPosition  = 0;
-	std::cout << std::endl;	
+	std::cout << "        " << std::endl;	
 	#endif
 
 	for (unsigned int i = 0; i < this->boardSize[0] - p->height + 1; ++i) {
@@ -674,13 +670,10 @@ bool ShapeShifter::SolveBFAllHelper(unsigned int l) {
 	#ifdef VERBOSE
 	std::cout << "\x1b[A";;	
 	#endif
-
-	return false;
 }
 
 void ShapeShifter::SolveBFPruneAll() {
 	std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces = new std::tuple<unsigned int, const Piece*, unsigned int> [this->numOfPieces];
-	int *partialCover = new int [this->numOfPieces];
 	int totalCover = 0;
 
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
@@ -698,8 +691,10 @@ void ShapeShifter::SolveBFPruneAll() {
 
 	std::sort(augmentedPieces, augmentedPieces + this->numOfPieces, pieceComperatorBackward);
 
+	this->partialCover = new int [this->numOfPieces];
+
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
-		partialCover[p] = totalCover;
+		this->partialCover[p] = totalCover;
 		totalCover -= std::get<2>(augmentedPieces[p]);
 	}
 
@@ -707,7 +702,7 @@ void ShapeShifter::SolveBFPruneAll() {
 	unsigned int totSolutions = 0;
 	unsigned int curSolution = 0;
 
-	this->SolveBFPruneAllHelper(0, augmentedPieces, partialCover);
+	this->SolveBFPruneAllHelper(0, augmentedPieces);
 
 	std::sort(this->solutions.begin(), this->solutions.end());
 
@@ -719,7 +714,8 @@ void ShapeShifter::SolveBFPruneAll() {
 		oFile     << "Solution (" << curSolution << "/" << totSolutions << "):" << std::endl;
 
 		for (unsigned int j = 0; j < this->solutions[i].size(); ++j) {
-			oFile     << "    Piece #" << j << ", Pos: " << this->solutions[i][j].first << "," << this->solutions[i][j].second << std::endl;
+			oFile     << "    Piece #" << j << ", Pos: " << static_cast<unsigned int>(this->solutions[i][j].first) << "," 
+														 << static_cast<unsigned int>(this->solutions[i][j].second) << std::endl;
 		}
 	}
 
@@ -732,10 +728,10 @@ void ShapeShifter::SolveBFPruneAll() {
 	oFile.close();
 
 	delete augmentedPieces;
-	delete partialCover;
+	delete this->partialCover;
 }
 
-bool ShapeShifter::SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover) {
+void ShapeShifter::SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces) {
 	int delta_weight;
 
 	this->total_recursive_calls++;
@@ -747,18 +743,18 @@ bool ShapeShifter::SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsign
 
 		this->total_boards_scanned++;
 
-		return false;
+		return;
 	}
 
-	if (partialCover[l] < this->weight)
-		return false;
+	if (this->partialCover[l] < this->weight)
+		return;
 
 	const std::tuple<unsigned int, const Piece*, unsigned int> &p = augmentedPieces[l];
 	
 	#ifdef VERBOSE
 	unsigned int totPositions = (this->boardSize[0] - std::get<1>(p)->height + 1) * (this->boardSize[1] - std::get<1>(p)->width + 1);
 	unsigned int curPosition  = 0;
-	std::cout << std::endl;	
+	std::cout << "        " << std::endl;	
 	#endif
 
 	for (unsigned int i = 0; i < this->boardSize[0] - std::get<1>(p)->height + 1; ++i) {
@@ -788,7 +784,7 @@ bool ShapeShifter::SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsign
 
 			this->weight += delta_weight;
 			
-			SolveBFPruneAllHelper(l + 1, augmentedPieces, partialCover);
+			SolveBFPruneAllHelper(l + 1, augmentedPieces);
 
 			this->weight -= delta_weight;
 
@@ -803,11 +799,185 @@ bool ShapeShifter::SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsign
 	#ifdef VERBOSE
 	std::cout << "\x1b[A";;	
 	#endif
-
-	return false;
 }
 
-std::size_t ShapeShifter::hashBoard(std::size_t &seed) {
+void ShapeShifter::SolveBDAll() {
+	unsigned long long multA = 1, multB = 1;
+
+	std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces = 
+			new std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> [this->numOfPieces];
+
+	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
+		int sum = 0;
+
+		for (unsigned int a = 0; a < this->pieces[p]->height; ++a) {
+			for (unsigned int b = 0; b < this->pieces[p]->width; ++b) {
+				sum += this->pieces[p]->p[a][b];
+			}
+		}
+
+		augmentedPieces[p] = std::make_tuple(p, this->pieces[p], sum, -1, -1);
+	}
+
+	std::sort(augmentedPieces, augmentedPieces + this->numOfPieces, pieceAComperatorBackward1);
+
+	this->half = 0;
+
+	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
+		std::get<4>(augmentedPieces[p]) = (this->boardSize[0] - std::get<1>(augmentedPieces[p])->height + 1) * 
+					 					  (this->boardSize[1] - std::get<1>(augmentedPieces[p])->width + 1);
+		if (multA <= multB) {
+			std::get<3>(augmentedPieces[p]) = 0;
+			multA *= std::get<4>(augmentedPieces[p]);
+			this->half += 1;
+		}
+		else {
+			std::get<3>(augmentedPieces[p]) = 1;
+			multB *= std::get<4>(augmentedPieces[p]);
+		}
+	}
+
+	std::sort(augmentedPieces, augmentedPieces + this->numOfPieces, pieceAComperatorBackward3);
+
+	this->partialCover = new int [this->half];
+	int totalCover = 0;
+
+	for (unsigned int p = 0; p < this->half; ++p) {
+		totalCover += std::get<2>(augmentedPieces[p]);
+	}
+
+	for (unsigned int p = 0; p < this->half; ++p) {
+		this->partialCover[p] = totalCover;
+		totalCover -= std::get<2>(augmentedPieces[p]);
+	}
+
+	this->middleBoard = new unsigned char* [this->boardSize[0]];
+	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
+		this->middleBoard[i] = new unsigned char [this->boardSize[1]];
+
+		for (unsigned int j = 0; j < this->boardSize[1]; ++j)
+			this->middleBoard[i][j] = 0;
+	}
+
+	std::cout << "Searching backward..." << std::endl;
+	this->middlePos.resize(this->numOfPieces - this->half);
+	this->SolveBDBackwardHelper(this->half, augmentedPieces);
+	std::cout << "\rSearching backward... Done" << std::endl;
+
+	std::cout << "Searching forward..." << std::endl;
+	this->SolveBDAllForwardHelper(0, augmentedPieces);
+	std::cout << "\rSearching forward... Done" << std::endl;
+
+	std::ofstream oFile;
+	unsigned int totSolutions = 0;
+	unsigned int curSolution = 0;
+
+	std::sort(this->solutions.begin(), this->solutions.end());
+
+	totSolutions = this->solutions.size();
+	oFile.open(this->fn + "_sol_bd_all_c++", std::ios::out);
+
+	for (unsigned int i = 0; i < totSolutions && i < 10000; ++i) {
+		curSolution++;
+		oFile     << "Solution (" << curSolution << "/" << totSolutions << "):" << std::endl;
+
+		for (unsigned int j = 0; j < this->solutions[i].size(); ++j) {
+			oFile     << "    Piece #" << j << ", Pos: " << static_cast<unsigned int>(this->solutions[i][j].first) << "," 
+														 << static_cast<unsigned int>(this->solutions[i][j].second) << std::endl;
+		}
+	}
+
+	//std::cout << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
+	//std::cout << "Total recursive calls: " << this->total_recursive_calls << std::endl;
+	//oFile     << "\nTotal boards scanned: " << this->total_boards_scanned << std::endl;
+	//oFile     << "Total recursive calls: " << this->total_recursive_calls << std::endl;
+	oFile     << "Total time: " << (clock()-start_s)/double(CLOCKS_PER_SEC) << " secs" << std::endl;
+
+	oFile.close();
+
+	delete augmentedPieces;
+	delete this->partialCover;
+	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
+		delete this->middleBoard[i];
+	}
+	delete this->middleBoard;
+}
+
+void ShapeShifter::SolveBDAllForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces) {
+	int deltaWeight;
+	std::pair<std::size_t, std::size_t> hash (0, 1);
+
+	if (l == this->half) {
+		this->hashBoard(hash.first);
+		this->hashBoard(hash.second);
+
+		auto it = this->middlePositions.find(hash);
+
+		if (it != this->middlePositions.end()) {
+			for(unsigned int p = 0; p < this->numOfPieces - this->half; ++p) {
+				this->sol[std::get<0>(augmentedPieces[p + this->half])].first = it->second[p].first;
+				this->sol[std::get<0>(augmentedPieces[p + this->half])].second = it->second[p].second;
+			}
+
+			this->solutions.push_back(this->sol);
+		}
+
+		return;
+	}
+
+	const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> &p = augmentedPieces[l];
+
+	#ifdef VERBOSE
+	unsigned int totPositions = (this->boardSize[0] - std::get<1>(p)->height + 1) * (this->boardSize[1] - std::get<1>(p)->width + 1);
+	unsigned int curPosition  = 0;
+	std::cout << "        " << std::endl;	
+	#endif
+
+	for (unsigned int i = 0; i < this->boardSize[0] - std::get<1>(p)->height + 1; ++i) {
+		for (unsigned int j = 0; j < this->boardSize[1] - std::get<1>(p)->width + 1; ++j) {
+			#ifdef VERBOSE
+			curPosition++;
+			std::cout << "\r" << curPosition << "/" << totPositions << "...";
+			#endif
+
+			deltaWeight = 0;
+
+			for (unsigned int a = 0; a < std::get<1>(p)->height; ++a) {
+				for (unsigned int b = 0; b < std::get<1>(p)->width; ++b) {
+					this->board[i + a][j + b] = (this->board[i + a][j + b] + std::get<1>(p)->p[a][b]) % this->X;
+
+					if (std::get<1>(p)->p[a][b] != 0) {
+						if (this->board[i + a][j + b] == 1)
+							deltaWeight += (this->X - 1);
+						else
+							deltaWeight--;
+					}
+					
+				}
+			}
+
+			this->sol[std::get<0>(p)].first = i;
+			this->sol[std::get<0>(p)].second = j;
+			this->weight += deltaWeight;
+
+			this->SolveBDAllForwardHelper(l + 1, augmentedPieces);
+
+			this->weight -= deltaWeight;
+
+			for (unsigned int a = 0; a < std::get<1>(p)->height; ++a) {
+				for (unsigned int b = 0; b < std::get<1>(p)->width; ++b) {
+					this->board[i + a][j + b] = (this->board[i + a][j + b] - std::get<1>(p)->p[a][b] + this->X) % this->X;
+				}
+			}
+		}
+	}
+
+	#ifdef VERBOSE
+	std::cout << "\x1b[A";;	
+	#endif
+}
+
+std::size_t ShapeShifter::hashBoard(std::size_t &seed) const {
 	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
 		for (unsigned int j = 0; j < this->boardSize[1]; ++j) {
 			seed ^= this->board[i][j] + 0x9e3779b9 + (seed<<6) + (seed>>2);
@@ -817,7 +987,7 @@ std::size_t ShapeShifter::hashBoard(std::size_t &seed) {
 	return seed;
 }
 
-std::size_t ShapeShifter::hashMiddleBoard(std::size_t &seed) {
+std::size_t ShapeShifter::hashMiddleBoard(std::size_t &seed) const {
 	for (unsigned int i = 0; i < this->boardSize[0]; ++i) {
 		for (unsigned int j = 0; j < this->boardSize[1]; ++j) {
 			seed ^= this->middleBoard[i][j] + 0x9e3779b9 + (seed<<6) + (seed>>2);
@@ -825,4 +995,13 @@ std::size_t ShapeShifter::hashMiddleBoard(std::size_t &seed) {
 	}
 
 	return seed;
+}
+
+void ShapeShifter::printSolution() const {
+	std::cout << "Solution found!" << std::endl;
+
+	for (unsigned int i = 0; i < this->numOfPieces; ++i) {
+		std::cout << "Piece #" << i << ", Pos: " << static_cast<unsigned int>(this->sol[i].first) << "," 
+												 << static_cast<unsigned int>(this->sol[i].second) << std::endl;
+	}
 }

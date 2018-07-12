@@ -35,35 +35,40 @@ public:
 
 	void SolveBFAll();		// Brute-Force solver (finds all solutions)
 	void SolveBFPruneAll();	// Brute-Force solver (finds all solutions)
+	void SolveBDAll();		// Bi-Directional solver (finds all solutions)
 
 private:
 	std::string fn;
 	unsigned int X;
 	unsigned int boardSize[2];
-	unsigned int **board;
+	unsigned char **board;
 	unsigned int numOfPieces;
 	std::vector<Piece *> pieces;
 	int weight;
 
-	std::vector<std::pair<unsigned int, unsigned int>> sol;
-	std::vector<std::vector<std::pair<unsigned int, unsigned int>>> solutions;
+	std::vector<std::pair<unsigned char, unsigned char>> sol;
+	std::vector<std::vector<std::pair<unsigned char, unsigned char>>> solutions;
 
 	unsigned int total_boards_scanned, total_recursive_calls;
 	unsigned int half;
-	unsigned int **middleBoard;
-	std::vector<std::pair<unsigned int, unsigned int>> middlePos;
+	unsigned char **middleBoard;
+	int *partialCover;
+	std::vector<std::pair<unsigned char, unsigned char>> middlePos;
 	int middleWeight;
-	std::unordered_map< std::pair<std::size_t, std::size_t>, std::vector<std::pair<unsigned int, unsigned int>>, pair_hash> middlePositions;
+	std::unordered_map< std::pair<std::size_t, std::size_t>, std::vector<std::pair<unsigned char, unsigned char>>, pair_hash> middlePositions;
 
 	bool SolveBFHelper(unsigned int l);
-	bool SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
+	bool SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces);
 
 	void SolveBDBackwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
-	bool SolveBDForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces,
-							  const int *partialCover);
-	bool SolveBFAllHelper(unsigned int l);
-	bool SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces, const int *partialCover);
+	bool SolveBDForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
+	
+	void SolveBFAllHelper(unsigned int l);
+	void SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces);
+	void SolveBDAllForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
 
-	std::size_t hashBoard(std::size_t &seed);
-	std::size_t hashMiddleBoard(std::size_t &seed);
+	std::size_t hashBoard(std::size_t &seed) const;
+	std::size_t hashMiddleBoard(std::size_t &seed) const;
+
+	void printSolution() const;
 };

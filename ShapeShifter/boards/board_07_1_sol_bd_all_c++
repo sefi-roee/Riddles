@@ -1,0 +1,289 @@
+Solution (1/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 1,0
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 0,0
+Solution (2/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 1,2
+    Piece #6, Pos: 1,0
+    Piece #7, Pos: 0,0
+Solution (3/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 1,1
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 0,0
+Solution (4/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,0
+    Piece #6, Pos: 1,1
+    Piece #7, Pos: 0,0
+Solution (5/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,1
+    Piece #6, Pos: 1,0
+    Piece #7, Pos: 0,0
+Solution (6/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 0,0
+    Piece #6, Pos: 0,1
+    Piece #7, Pos: 0,0
+Solution (7/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 0,1
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 0,0
+Solution (8/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 1,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 0,2
+    Piece #6, Pos: 1,0
+    Piece #7, Pos: 0,0
+Solution (9/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 0,0
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 1,0
+Solution (10/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,2
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 1,0
+Solution (11/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 0,1
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 1,0
+Solution (12/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 0,1
+    Piece #6, Pos: 1,1
+    Piece #7, Pos: 1,0
+Solution (13/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,1
+    Piece #6, Pos: 0,1
+    Piece #7, Pos: 1,0
+Solution (14/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 0,0
+    Piece #6, Pos: 1,1
+    Piece #7, Pos: 1,0
+Solution (15/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 1,0
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 1,0
+Solution (16/32):
+    Piece #0, Pos: 0,0
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 1,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 0,2
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 1,0
+Solution (17/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,0
+    Piece #6, Pos: 1,1
+    Piece #7, Pos: 0,0
+Solution (18/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,1
+    Piece #6, Pos: 1,0
+    Piece #7, Pos: 0,0
+Solution (19/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 0,0
+    Piece #6, Pos: 0,1
+    Piece #7, Pos: 0,0
+Solution (20/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 0,1
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 0,0
+Solution (21/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 1,0
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 0,0
+Solution (22/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 1,2
+    Piece #6, Pos: 1,0
+    Piece #7, Pos: 0,0
+Solution (23/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 1,1
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 0,0
+Solution (24/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 0,1
+    Piece #2, Pos: 1,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 0,2
+    Piece #6, Pos: 1,0
+    Piece #7, Pos: 0,0
+Solution (25/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 0,1
+    Piece #6, Pos: 1,1
+    Piece #7, Pos: 1,0
+Solution (26/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,1
+    Piece #6, Pos: 0,1
+    Piece #7, Pos: 1,0
+Solution (27/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 0,0
+    Piece #6, Pos: 1,1
+    Piece #7, Pos: 1,0
+Solution (28/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 2,0
+    Piece #5, Pos: 1,0
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 1,0
+Solution (29/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 0,0
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 1,0
+Solution (30/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 1,2
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 1,0
+Solution (31/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 0,0
+    Piece #3, Pos: 1,0
+    Piece #4, Pos: 1,0
+    Piece #5, Pos: 0,1
+    Piece #6, Pos: 1,2
+    Piece #7, Pos: 1,0
+Solution (32/32):
+    Piece #0, Pos: 0,1
+    Piece #1, Pos: 1,1
+    Piece #2, Pos: 1,0
+    Piece #3, Pos: 0,0
+    Piece #4, Pos: 0,0
+    Piece #5, Pos: 0,2
+    Piece #6, Pos: 0,0
+    Piece #7, Pos: 1,0
+Total time: 0.002548 secs

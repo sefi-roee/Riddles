@@ -141,7 +141,7 @@ class ShapeShifter:
 
 	def solve_bf_prune(self):
 		self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
-		self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
+		self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0]), reverse=True)) # Sorting in order to prune as early as possible
 
 		cover_acc = sum([p[2] for p in self.augmented_pieces])
 
@@ -149,7 +149,7 @@ class ShapeShifter:
 		for p in self.augmented_pieces:
 			self.partial_cover.append(cover_acc)
 			cover_acc -= p[2]
-
+		
 		self.pos = [0 for i in range(self.num_of_pieces)]
 
 		sol = self.solve_bf_prune_helper(0)
@@ -162,6 +162,7 @@ class ShapeShifter:
 				#pos = sorted(pos, key=lambda p: p[0])
 				print 'Solution:'
 				for i, p in enumerate(self.pos):
+					pass
 					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
 				return self.pos
 
@@ -541,7 +542,7 @@ class ShapeShifter:
 
 		print 'Generating super pieces...',
 		self.solve_board_coverage_generate_super_pieces(0, set(), 0, 0)
-		self.super_pieces = list(reversed(sorted(self.super_pieces, key = lambda sp: len(sp[0]))))
+		self.super_pieces = list(sorted(self.super_pieces, key = lambda sp: len(sp[0]), reverse=True))
 		print 'Done'
 
 		self.coverage_capacity = [sum(map(sum,p)) for p in self.pieces]
@@ -654,7 +655,7 @@ class ShapeShifter:
 
 	def solve_bf_informed_prune(self):
 		self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
-		self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
+		self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0]), reverse=True)) # Sorting in order to prune as early as possible
 
 		cover_acc = sum([p[2] for p in self.augmented_pieces])
 
@@ -814,7 +815,7 @@ class ShapeShifter:
 
 	def solve_bf_prune_all(self):
 		self.augmented_pieces = [(i, p, sum(map(sum,p))) for i,p in enumerate(self.pieces)] # Add piece "coverage capacity"
-		self.augmented_pieces = list(reversed(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0])))) # Sorting in order to prune as early as possible
+		self.augmented_pieces = list(sorted(self.augmented_pieces, key=lambda p: len(p[1]) * len(p[1][0]), reverse=True)) # Sorting in order to prune as early as possible
 
 		cover_acc = sum([p[2] for p in self.augmented_pieces])
 

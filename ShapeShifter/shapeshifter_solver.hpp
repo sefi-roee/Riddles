@@ -29,14 +29,15 @@ public:
 
 	void Solve(const std::string &algorithm = "bf");
 
-	bool SolveBF();			// Brute-Force solver
-	bool SolveBFPrune();	// Brute-Force solver with pruning
-	bool SolveBD();			// Bi-Directional solver
-	bool SolveBDPrune();	// Bi-Directional solver with pruning
+	bool SolveBF();					// Brute-Force solver
+	bool SolveBFPrune();			// Brute-Force solver with pruning
+	bool SolveBFPruneInformed();	// Informed Brute-Force solver with pruning
+	bool SolveBD();					// Bi-Directional solver
+	bool SolveBDPrune();			// Bi-Directional solver with pruning
 
-	void SolveBFAll();		// Brute-Force solver (finds all solutions)
-	void SolveBFPruneAll();	// Brute-Force solver (finds all solutions)
-	void SolveBDAll();		// Bi-Directional solver (finds all solutions)
+	void SolveBFAll();				// Brute-Force solver (finds all solutions)
+	void SolveBFPruneAll();			// Brute-Force solver (finds all solutions)
+	void SolveBDAll();				// Bi-Directional solver (finds all solutions)
 
 private:
 	std::string fn;
@@ -60,6 +61,7 @@ private:
 
 	bool SolveBFHelper(unsigned int l);
 	bool SolveBFPruneHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces);
+	bool SolveBFPruneInformedHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces);
 
 	void SolveBDBackwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
 	bool SolveBDForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);

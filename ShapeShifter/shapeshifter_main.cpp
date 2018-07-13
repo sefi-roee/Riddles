@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 	start_s=clock();
 
 	ShapeShifter solver(argv[1]);
-	solver.Solve("bd");
+	solver.Solve("bf_prune");
 
 	stop_s=clock();
 	std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << std::endl;

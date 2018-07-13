@@ -151,7 +151,7 @@ class ShapeShifter:
 			cover_acc -= p[2]
 		
 		self.pos = [0 for i in range(self.num_of_pieces)]
-
+		
 		sol = self.solve_bf_prune_helper(0)
 
 		return sol
@@ -162,7 +162,6 @@ class ShapeShifter:
 				#pos = sorted(pos, key=lambda p: p[0])
 				print 'Solution:'
 				for i, p in enumerate(self.pos):
-					pass
 					print 'Piece #{}, Pos: {},{}'.format(i, p[0], p[1])
 				return self.pos
 

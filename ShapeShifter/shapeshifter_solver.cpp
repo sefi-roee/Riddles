@@ -4,6 +4,7 @@
 #include <ctime>
 
 extern int start_s;
+const int BD_PRUNE_FACTOR = 1000;
 
 bool pieceComperatorBackward(std::tuple<unsigned int, const Piece*, unsigned int> i, std::tuple<unsigned int, const Piece*, unsigned int> j) {
 	return (std::get<1>(i)->height * std::get<1>(i)->width) > (std::get<1>(j)->height * std::get<1>(j)->width);
@@ -117,6 +118,9 @@ void ShapeShifter::Solve(const std::string &algorithm) {
 	}
 	else if (!algorithm.compare("bd")) {
 		isFound = this->SolveBD();
+	}
+	else if (!algorithm.compare("bd_prune")) {
+		isFound = this->SolveBDPrune();
 	}
 
 	else if (!algorithm.compare("bf_all")) {
@@ -337,7 +341,7 @@ bool ShapeShifter::SolveBD() {
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
 		std::get<4>(augmentedPieces[p]) = (this->boardSize[0] - std::get<1>(augmentedPieces[p])->height + 1) * 
 					 					  (this->boardSize[1] - std::get<1>(augmentedPieces[p])->width + 1);
-		if (multA <= multB * 1000) {
+		if (multA <= multB * BD_PRUNE_FACTOR) {
 			std::get<3>(augmentedPieces[p]) = 0;
 			multA *= std::get<4>(augmentedPieces[p]);
 			this->half += 1;
@@ -521,7 +525,7 @@ bool ShapeShifter::SolveBDPrune() {
 	for (unsigned int p = 0; p < this->numOfPieces; ++p) {
 		std::get<4>(augmentedPieces[p]) = (this->boardSize[0] - std::get<1>(augmentedPieces[p])->height + 1) * 
 					 					  (this->boardSize[1] - std::get<1>(augmentedPieces[p])->width + 1);
-		if (multA <= multB * 1000) {
+		if (multA <= multB * BD_PRUNE_FACTOR) {
 			std::get<3>(augmentedPieces[p]) = 0;
 			multA *= std::get<4>(augmentedPieces[p]);
 			this->half += 1;

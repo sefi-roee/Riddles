@@ -38,6 +38,7 @@ public:
 	void SolveBFAll();				// Brute-Force solver (finds all solutions)
 	void SolveBFPruneAll();			// Brute-Force solver (finds all solutions)
 	void SolveBDAll();				// Bi-Directional solver (finds all solutions)
+	void SolveBDPruneAll();			// Bi-Directional solver with pruning(finds all solutions)
 
 private:
 	std::string fn;
@@ -71,6 +72,7 @@ private:
 	void SolveBFAllHelper(unsigned int l);
 	void SolveBFPruneAllHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int> *augmentedPieces);
 	void SolveBDAllForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
+	void SolveBDPruneAllForwardHelper(unsigned int l, const std::tuple<unsigned int, const Piece*, unsigned int, unsigned int, unsigned int> *augmentedPieces);
 
 	std::size_t hashBoard(std::size_t &seed) const;
 	std::size_t hashMiddleBoard(std::size_t &seed) const;

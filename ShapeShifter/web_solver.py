@@ -57,7 +57,7 @@ except AssertionError:
 
 # Continue game
 try:
-	e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center/center/form/input')[0]
+	e = driver.find_elements_by_xpath('//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input')[0]
 	assert (e.get_attribute('value') == 'Continue Game!')
 	print 'Game continued!'
 	e.click()

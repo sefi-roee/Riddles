@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import selenium
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.by import By
@@ -264,12 +265,19 @@ def main():
 			#driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(s[0] + 1, s[1] + 1)).send_keys(u'\ue007')#.click()
 
 		if args.verbose:
-			WebDriverWait(driver, 10).until(
-				EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form/input'))
-			) # Wait for finish
-			print ' Done!'
-			print '*************************************************************\n'
-			sys.stdout.flush()
+			try:
+				WebDriverWait(driver, 10).until(
+					EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form/input'))
+				) # Wait for finish
+				print ' Done!'
+				print '*************************************************************\n'
+				sys.stdout.flush()
+			except selenium.common.exceptions.TimeoutException:
+				print 'You\'ve reached your max neopoints on this game for today!'
+				print '*************************************************************\n'
+				sys.stdout.flush()
+
+				break
 
 		it += 1
 

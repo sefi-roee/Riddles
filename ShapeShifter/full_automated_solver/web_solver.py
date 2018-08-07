@@ -176,8 +176,6 @@ def main():
 				print 'Failed!'
 				sys.stdout.flush()
 				driver.refresh()
-				it -= 1
-
 
 			continue
 

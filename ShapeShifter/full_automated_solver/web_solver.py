@@ -72,7 +72,7 @@ def main():
 
 	signal.signal(signal.SIGINT, signal_handler)
 
-	WebDriverWait(driver, 5).until(
+	WebDriverWait(driver, 10).until(
 		EC.presence_of_element_located((By.NAME, "username"))
 	)
 	username = driver.find_elements_by_name("username")[1]
@@ -138,7 +138,7 @@ def main():
 				print 'Parsing board...',
 				sys.stdout.flush()
 
-			WebDriverWait(driver, 5).until(
+			WebDriverWait(driver, 10).until(
 				EC.element_to_be_clickable((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/table/tbody/tr/td/table/tbody/tr/td[*]/img'))
 			)
 			level = driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[1]/b/big').text

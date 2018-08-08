@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <future>
 
-
 bool shapeComperatorBackward(const Shape &i, const Shape &j);
 bool shapeComperatorIdx(const Shape &i, const Shape &j);
 

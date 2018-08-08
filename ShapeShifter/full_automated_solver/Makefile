@@ -11,7 +11,7 @@ BOOST_LIB = /usr/lib/x86_64-linux-gnu/
 # compile mesh classes
 TARGET = shapeshifter
  
-$(TARGET): $(TARGET).o 
+$(TARGET): $(TARGET).o main.cpp
 	g++ -std=c++11 -Werror -Wall -pedantic -lpthread -pthread shapeshifter.cpp shape.cpp main.cpp -o shapeshifter -g -O3
 
 $(TARGET).o: $(TARGET).cpp $(TARGET).hpp

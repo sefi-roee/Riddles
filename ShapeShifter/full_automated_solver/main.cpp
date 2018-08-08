@@ -38,8 +38,9 @@ int main(int argc, char **argv) {
 	solver.PrintSolution();
 #endif
 
-#ifndef VERBOSE	
-	std::cout <<solver.GetSolutionString() << std::endl;
+#ifndef VERBOSE
+	std::cout << (std::chrono::high_resolution_clock::now() - start).count() / 1e9 << std::endl;
+	std::cout << solver.GetSolutionString() << std::endl;
 #endif
 
 	stop_s=clock();
@@ -57,10 +58,10 @@ int main(int argc, char **argv) {
 void printStatus(int sig) {
 	auto elapsed = std::chrono::high_resolution_clock::now() - start;
 
-	std::cerr << "**************** STATUS ****************" << std::endl;
+	std::cerr << "\r**************** STATUS ****************" << std::endl;
 	std::cerr << "\rRunning time: " << std::setw(8) << std::left << elapsed.count() / 1e9 << "s" << std::endl;
 	std::cerr << "\rCPU time: " << std::setw(8) << std::left << (clock()-start_s)/double(CLOCKS_PER_SEC) << "s" << std::endl;
 	ss->Status();
-	std::cerr << "****************************************" << std::endl;
+	std::cerr << "\r****************************************" << std::endl;
 }
 #endif

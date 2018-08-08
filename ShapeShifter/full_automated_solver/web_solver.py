@@ -87,37 +87,38 @@ def main():
 		sys.stdout.flush()
 
 	it = 0
+
+	# Start game
+	try:
+		WebDriverWait(driver, 5).until(
+			EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center/form/input[2]'))
+		)
+
+		e = driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center/form/input[2]')
+		assert (e.get_attribute('value') == 'Start Game!')
+		if args.verbose:
+			print 'Started a new game!'
+			sys.stdout.flush()
+		e.click()
+	except:
+		pass
+
+	# Continue game
+	try:
+		WebDriverWait(driver, 5).until(
+			EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input'))
+		)
+
+		e = driver.find_elements_by_xpath('//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input')[0]
+		assert (e.get_attribute('value') == 'Continue Game!')
+		if args.verbose:
+			print 'Continue game!'
+			sys.stdout.flush()
+		e.click()
+	except:
+		pass
+
 	while it < args.l:
-		# Start game
-		try:
-			WebDriverWait(driver, 5).until(
-				EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center/form/input[2]'))
-			)
-
-			e = driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center/form/input[2]')
-			assert (e.get_attribute('value') == 'Start Game!')
-			if args.verbose:
-				print 'Started a new game!'
-				sys.stdout.flush()
-			e.click()
-		except:
-			pass
-
-		# Continue game
-		try:
-			WebDriverWait(driver, 5).until(
-				EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input'))
-			)
-
-			e = driver.find_elements_by_xpath('//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input')[0]
-			assert (e.get_attribute('value') == 'Continue Game!')
-			if args.verbose:
-				print 'Continue game!'
-				sys.stdout.flush()
-			e.click()
-		except:
-			pass
-
 		# Move to the next level
 		try:
 			WebDriverWait(driver, 5).until(
@@ -135,7 +136,7 @@ def main():
 			
 		try:
 			if args.verbose:
-				print 'Parsing board...',
+				print 'Parsing board...', #presence_of_element_located
 				sys.stdout.flush()
 
 			WebDriverWait(driver, 10).until(
@@ -202,9 +203,9 @@ def main():
 		if args.verbose:
 			print 'Running solver...',
 		linebuffer=[]
-		sol = subprocess.Popen(['./shapeshifter',  './board_{:02d}'.format(int(level.split()[-1]))], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		solver = subprocess.Popen(['./shapeshifter',  './board_{:02d}'.format(int(level.split()[-1]))], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-		t=Thread(target=reader,args=(sol.stderr,linebuffer))
+		t=Thread(target=reader,args=(solver.stderr,linebuffer))
 		t.daemon=True
 		t.start()
 
@@ -219,13 +220,13 @@ def main():
 			print 'Number of flips: {}'.format(numOfFlips)
 			numOfThreads = int(linebuffer.pop(0).split(':')[1])
 			print 'Number of threads: {}'.format(numOfThreads)
-			sys.stdout.flush()
 			print
+			sys.stdout.flush()
 
 		flag = False
 		time.sleep(1)
-		while sol.poll() == None:
-			sol.send_signal(10)
+		while solver.poll() == None:
+			solver.send_signal(10)
 			time.sleep(5)
 			if flag:
 				if args.verbose:
@@ -237,35 +238,34 @@ def main():
 				if args.verbose:
 					print linebuffer.pop(0),
 
-		sol =  sol.communicate()[0]
+		solveTime, solution, _ = solver.communicate()[0].split('\n')
 
-		sol = sol[:-1].split(';')
-		sol = sol[:-1]
+		solution = solution.split(';')
+		solution = solution[:-1]
 		if args.verbose:
-			print 'Solution found'
-			print '\t'.join(sol)
+			print 'Solution found (In {} secs)'.format(solveTime)
+			print '\t'.join(solution)
 			print ''
 			sys.stdout.flush()
 
-		for i, s in enumerate(sol):
+		for i, s in enumerate(solution):
 			s = map(int, s.split(','))
 			if args.verbose:
 				print '\r',
-				print '\tPlacing piece {}/{} (at {},{})...'.format(i+1, len(sol), s[0]+1, s[1]+1),
+				print '\tPlacing piece {}/{} (at {},{})...'.format(i+1, len(solution), s[0]+1, s[1]+1),
 				sys.stdout.flush()
 
 			xpath = '//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(s[0] + 1, s[1] + 1)
-			element = WebDriverWait(driver, 10).until(
+			element = WebDriverWait(driver, 15).until(
 				EC.element_to_be_clickable((By.XPATH, xpath))
 			);
 
 			element.click();
-			#driver.find_element_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(s[0] + 1, s[1] + 1)).send_keys(u'\ue007')#.click()
 
 		if args.verbose:
 			try:
 				WebDriverWait(driver, 10).until(
-					EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form/input'))
+					EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input'))
 				) # Wait for finish
 				print ' Done!'
 				print '*************************************************************\n'

@@ -300,10 +300,10 @@ if __name__ == '__main__':
 	driver.maximize_window()
 
 	if args.verbose:
-		startTime = time.clock()
+		startTime = time.time()
 
 	main()
 
 	if args.verbose:
-		elapsedTime = time.clock() - startTime
-		print 'Board solved in ({}) is: {} sec'.format(__name__, elapsedTime)
+		elapsedTime = time.time() - startTime
+		print 'Total time in ({}) is: {} sec'.format(__name__, elapsedTime)

@@ -19,6 +19,13 @@ except ImportError:
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 
+FLIP_LIMITS = {}
+for i in range(1, 100 + 1):
+	FLIP_LIMITS['LEVEL {}'.format(i)] = 50
+
+FLIP_LIMITS['LEVEL 41'] = 34
+FLIP_LIMITS['LEVEL 45'] = 44
+
 def signal_handler(sig, frame):
 	global driver
 
@@ -223,6 +230,40 @@ def main():
 			print
 			sys.stdout.flush()
 
+		if args.max_flips and numOfFlips > FLIP_LIMITS[level]: # Get new puzzle
+			if args.verbose:
+				print 'Puzzle seems to be too hard to solve, getting new puzzle...'
+				print 'Killing solver...',
+
+			solver.send_signal(10)
+
+			if args.verbose:
+				print 'Done'
+				print 'Place all pieces at (1,1)'
+
+			for _ in range(len(next_shapes) + 1):
+				xpath = '//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(1, 1)
+				element = WebDriverWait(driver, 15).until(
+					EC.element_to_be_clickable((By.XPATH, xpath))
+				);
+
+				element.click();
+
+			# Try again
+			WebDriverWait(driver, 5).until(
+				EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input'))
+			)
+
+			e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input')[0]
+			assert (e.get_attribute('value') == 'Try again?')
+			if args.verbose:
+				print 'Try again'
+				sys.stdout.flush()
+			e.click()
+			
+			continue
+
+
 		flag = False
 		time.sleep(1)
 		while solver.poll() == None:
@@ -289,6 +330,7 @@ if __name__ == '__main__':
 	parser.add_argument("username", help="username in neopets")
 	parser.add_argument("password", help="password in neopets")
 	parser.add_argument("-l", help="limit number of levels", type=int, default=200)
+	parser.add_argument("-m", "--max-flips" ,help="limit maximum filps before trying new puzzle", action="store_true")
 	parser.add_argument("-po", "--parse-only", help="only parse the board", action="store_true")
 	parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 

@@ -125,20 +125,20 @@ ShapeShifter::ShapeShifter(const std::string& fileName, bool printLog, unsigned 
 ShapeShifter::~ShapeShifter() {
 	for (int s = 0; s < this->numShapes; ++s) {
 		for (unsigned int t = 0; t < this->numOfThreads; ++t) {
-			delete this->shapes[s].positions[t];
+			delete[] this->shapes[s].positions[t];
 		}
-		delete this->shapes[s].positions;
-		delete this->shapes[s].position;
-		delete this->shapes[s].maxFlipsAllowed;
+		delete[] this->shapes[s].positions;
+		delete[] this->shapes[s].position;
+		delete[] this->shapes[s].maxFlipsAllowed;
 	}
-	delete this->shapes;
+	delete[] this->shapes;
 
 	for (unsigned int t = 0; t < this->numOfThreads; ++t) {
-		delete this->board[t];
+		delete[] this->board[t];
 	}
-	delete this->board;
+	delete[] this->board;
 
-	delete this->threadStatus;
+	delete[] this->threadStatus;
 }
 
 bool ShapeShifter::Solve() {

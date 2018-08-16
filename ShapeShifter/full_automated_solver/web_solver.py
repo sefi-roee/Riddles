@@ -25,6 +25,31 @@ for i in range(1, 100 + 1):
 
 FLIP_LIMITS['LEVEL 41'] = 34
 FLIP_LIMITS['LEVEL 45'] = 44
+FLIP_LIMITS['LEVEL 46'] = 16
+FLIP_LIMITS['LEVEL 47'] = 15
+FLIP_LIMITS['LEVEL 48'] = 17
+FLIP_LIMITS['LEVEL 49'] = 19
+FLIP_LIMITS['LEVEL 50'] = 24
+FLIP_LIMITS['LEVEL 51'] = 37
+FLIP_LIMITS['LEVEL 52'] = 21
+FLIP_LIMITS['LEVEL 53'] = 13
+FLIP_LIMITS['LEVEL 54'] = 17
+FLIP_LIMITS['LEVEL 59'] = 10
+FLIP_LIMITS['LEVEL 60'] = 11
+FLIP_LIMITS['LEVEL 61'] = 15
+FLIP_LIMITS['LEVEL 62'] = 19
+FLIP_LIMITS['LEVEL 63'] = 15
+FLIP_LIMITS['LEVEL 64'] = 11
+FLIP_LIMITS['LEVEL 65'] = 7
+FLIP_LIMITS['LEVEL 66'] = 11
+FLIP_LIMITS['LEVEL 67'] = 9
+FLIP_LIMITS['LEVEL 68'] = 9
+FLIP_LIMITS['LEVEL 69'] = 11
+FLIP_LIMITS['LEVEL 70'] = 14
+FLIP_LIMITS['LEVEL 71'] = 8
+FLIP_LIMITS['LEVEL 72'] = 8
+FLIP_LIMITS['LEVEL 73'] = 12
+FLIP_LIMITS['LEVEL 74'] = 15
 
 def signal_handler(sig, frame):
 	global driver
@@ -110,13 +135,29 @@ def main():
 	except:
 		pass
 
+	# Try again
+	try:
+
+		WebDriverWait(driver, 5).until(
+			EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input'))
+		)
+
+		e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input')[0]
+		assert (e.get_attribute('value') == 'Try again?')
+		if args.verbose:
+			print 'Try again'
+			sys.stdout.flush()
+		e.click()
+	except:
+		pass
+
 	# Continue game
 	try:
 		WebDriverWait(driver, 5).until(
-			EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input'))
+			EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center/center/form/input'))
 		)
 
-		e = driver.find_elements_by_xpath('//*[@id="content"]/div[1]/table/tbody/tr/td[2]/center/center/form/input')[0]
+		e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center/center/form/input')[0]
 		assert (e.get_attribute('value') == 'Continue Game!')
 		if args.verbose:
 			print 'Continue game!'
@@ -187,10 +228,14 @@ def main():
 
 			continue
 
+		if args.verbose:
+			print 'Creating board file ({})...'.format('./board_{:02d}'.format(int(level.split()[-1]))),
+			sys.stdout.flush()
+
 		next_shapes = []
 
 		for next_shape_e in next_shapes_e:
-			next_shapes.append(get_shape_from_e(next_shape_e))
+			next_shapes.append(get_shape_from_e(next_shape_e))		
 
 		with open('./board_{:02d}'.format(int(level.split()[-1])), 'w') as out_file:
 			print >>out_file, len(group)
@@ -204,11 +249,17 @@ def main():
 				print >>out_file, '{}x{}'.format(len(next_shape), len(next_shape[0]))
 				print >>out_file, print_elem(next_shape),
 		
+		if args.verbose:
+			print 'Done!'
+			sys.stdout.flush()
+
 		if args.parse_only:
 			break
 
 		if args.verbose:
 			print 'Running solver...',
+			sys.stdout.flush()
+
 		linebuffer=[]
 		solver = subprocess.Popen(['./shapeshifter',  './board_{:02d}'.format(int(level.split()[-1]))], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -231,38 +282,58 @@ def main():
 			sys.stdout.flush()
 
 		if args.max_flips and numOfFlips > FLIP_LIMITS[level]: # Get new puzzle
-			if args.verbose:
-				print 'Puzzle seems to be too hard to solve, getting new puzzle...'
-				print 'Killing solver...',
+			flag = False
 
-			solver.send_signal(10)
+			for i in range(10, 0, -1):
+				if args.verbose:
+					if i != 1:
+						print '\rPuzzle seems to be too hard to solve (limited to: {}), waiting {} seconds for a solution before getting a new puzzle...'.format(FLIP_LIMITS[level], i),
+					else:
+						print '\rPuzzle seems to be too hard to solve (limited to: {}), waiting 1 second for a solution before getting a new puzzle...'.format(FLIP_LIMITS[level]),
+					sys.stdout.flush()
 
-			if args.verbose:
-				print 'Done'
-				print 'Place all pieces at (1,1)'
+				time.sleep(1)
 
-			for _ in range(len(next_shapes) + 1):
-				xpath = '//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(1, 1)
-				element = WebDriverWait(driver, 15).until(
-					EC.element_to_be_clickable((By.XPATH, xpath))
-				);
+				if solver.poll() != None: # Finished
+					flag = True
+					print ''
+					break
 
-				element.click();
+			if flag == False: # Didn't finish for 10 secs
+				if args.verbose:
+					print '\nKilling solver...',
 
-			# Try again
-			WebDriverWait(driver, 5).until(
-				EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input'))
-			)
+				solver.kill()
 
-			e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input')[0]
-			assert (e.get_attribute('value') == 'Try again?')
-			if args.verbose:
-				print 'Try again'
-				sys.stdout.flush()
-			e.click()
-			
-			continue
+				if args.verbose:
+					print 'Done'
+					print 'Place all pieces at (1,1)'
 
+				for _ in range(len(next_shapes) + 1):
+					xpath = '//*[@id="content"]/table/tbody/tr/td[2]/table/tbody/tr[{}]/td[{}]/a/img'.format(1, 1)
+					element = WebDriverWait(driver, 20).until(
+						EC.element_to_be_clickable((By.XPATH, xpath))
+					);
+
+					element.click();
+
+				# Try again
+				WebDriverWait(driver, 15).until(
+					EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input'))
+				)
+
+				e = driver.find_elements_by_xpath('//*[@id="content"]/table/tbody/tr/td[2]/center[2]/form[1]/input')[0]
+				assert (e.get_attribute('value') == 'Try again?')
+				if args.verbose:
+					print 'Try again'
+					sys.stdout.flush()
+				e.click()
+				
+				continue
+
+			else:
+				if args.verbose:
+					print 'We got lucky and solved it fast anyway...'
 
 		flag = False
 		time.sleep(1)
@@ -332,9 +403,13 @@ if __name__ == '__main__':
 	parser.add_argument("-l", help="limit number of levels", type=int, default=200)
 	parser.add_argument("-m", "--max-flips" ,help="limit maximum filps before trying new puzzle", action="store_true")
 	parser.add_argument("-po", "--parse-only", help="only parse the board", action="store_true")
+	parser.add_argument("-r", "--record", help="record screen (using recordmydesktop)", action="store_true")
 	parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
 	args = parser.parse_args()
+
+	if args.record:
+		rec = subprocess.Popen(["recordmydesktop", "--no-sound", "--full-shots", "--on-the-fly-encoding", "-o", "/home/roee/Desktop/ss"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	capa = DesiredCapabilities.CHROME
 	capa["pageLoadStrategy"] = "none"
@@ -349,3 +424,10 @@ if __name__ == '__main__':
 	if args.verbose:
 		elapsedTime = time.time() - startTime
 		print 'Total time in ({}) is: {} sec'.format(__name__, elapsedTime)
+
+	if args.record:
+		time.sleep(2)
+		rec.send_signal(signal.SIGTERM)
+
+		while rec.poll() == None:
+			pass
